@@ -1,7 +1,7 @@
 # php-email-send-layer
 A small layer created to abstract the ways to send emails with php.
 
-# Mail Adapters
+# Email Adapters
 
 This project contains a small abstraction for email sending process. It uses adapters to allow the implementation of any email sending provider. Currently, there are some adapters implemented, as below.
 
