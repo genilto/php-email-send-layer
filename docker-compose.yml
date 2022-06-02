@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  mailer:
+    image: php:8-apache
+    container_name: mailer
+    restart: unless-stopped
+    ports:
+      - 85:80
+    environment:
+      - MAIL_SMTP_SERVER=${MAIL_SMTP_SERVER}
+      - MAIL_SMTP_PORT=${MAIL_SMTP_PORT}
+      - MAIL_SMTP_USER=${MAIL_SMTP_USER}
+      - MAIL_SMTP_PASSWORD=${MAIL_SMTP_PASSWORD}
+      - MAIL_API_KEY=${MAIL_API_KEY}
+    volumes:
+      - .:/var/www
