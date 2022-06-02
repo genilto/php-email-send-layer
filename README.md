@@ -5,7 +5,7 @@ A small layer created to abstract the ways to send emails with php.
 
 This project contains a small abstraction for email sending process. It uses adapters to allow the implementation of any email sending provider. Currently, there are some adapters implemented, as below.
 
-To configure a default adapter, you can define a function named DEFAULT_EMAIL_ADAPTER and return the adapter. As the examples.
+To configure a default adapter, you can define a function named DEFAULT_EMAIL_ADAPTER and return the adapter instance. As the examples.
 
 ## PHPMailer
 
