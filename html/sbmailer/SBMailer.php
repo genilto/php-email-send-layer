@@ -12,9 +12,19 @@ class SBMailer implements iSBMailerAdapter {
         $this->mailAdapter = $mailAdapter;
     }
 
+    /**
+     * Creates the default instance of SBMailer
+     * adding the default adapter as configured 
+     * in DEFAULT_EMAIL_ADAPTER function
+     * 
+     * @throws \Exception if DEFAULT_EMAIL_ADAPTER is not defined
+     */
     public static function createDefault () {
-        $mailer = new static( DEFAULT_EMAIL_ADAPTER() );
-        return $mailer;
+        if (function_exists('DEFAULT_EMAIL_ADAPTER')) {
+            $mailer = new SBMailer( DEFAULT_EMAIL_ADAPTER() );
+            return $mailer;
+        }
+        throw new \Exception('DEFAULT_EMAIL_ADAPTER not defined.');
     }
 
     public function setFrom($address, $name = '') {

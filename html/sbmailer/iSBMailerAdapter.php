@@ -74,7 +74,7 @@ interface iSBMailerAdapter
     /**
      * Sends the email
      * 
-     * @throws Exception
+     * @throws \Exception
      */
     public function send ();
 }
