@@ -7,9 +7,13 @@ require_once ( __DIR__ . '/SBPHPMailerAdapter.php' );
 class SBMailer implements iSBMailerAdapter {
 
     private $mailAdapter;
+    private $enableExcetions;
 
-    public function __construct ($mailAdapter) {
+    public $ErrorInfo;
+
+    public function __construct ($mailAdapter, $enableExcetions = false) {
         $this->mailAdapter = $mailAdapter;
+        $this->enableExcetions = $enableExcetions;
     }
 
     /**
@@ -19,9 +23,9 @@ class SBMailer implements iSBMailerAdapter {
      * 
      * @throws \Exception if DEFAULT_EMAIL_ADAPTER is not defined
      */
-    public static function createDefault () {
+    public static function createDefault ($enableExcetions = false) {
         if (function_exists('DEFAULT_EMAIL_ADAPTER')) {
-            $mailer = new SBMailer( DEFAULT_EMAIL_ADAPTER() );
+            $mailer = new SBMailer( DEFAULT_EMAIL_ADAPTER(), $enableExcetions );
             return $mailer;
         }
         throw new \Exception('DEFAULT_EMAIL_ADAPTER not defined.');
@@ -60,8 +64,13 @@ class SBMailer implements iSBMailerAdapter {
     public function send () {
         try {
             $this->mailAdapter->send();
+            return true;
         } catch (\Exception $e) {
-            throw new \Exception("Email was NOT sent. Error: " . $e->getMessage());
+            $this->ErrorInfo = "Email was NOT sent. Error: " . $e->getMessage();
+            if ($this->enableExcetions) {
+                throw new \Exception( $this->ErrorInfo );
+            }
         }
+        return false;
     }
 }
