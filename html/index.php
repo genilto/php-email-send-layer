@@ -13,13 +13,11 @@ $mailer = SBMailer::createDefault();
 // $mailer = SBMailer::createDefault(true);
 
 // Set the From fields of email
-$mailer->setFrom("genilto@stonebasyx.com", "Genilto Stone Basyx");
-// $mailer->setFrom("emailfrom@domain.com", "From Name");
+$mailer->setFrom("emailfrom@domain.com", "From Name");
 // $mailer->addReplyTo("replyto@domain.com", "Reply To Name");
 
 // // Add recipients
-$mailer->addAddress ("genilto.vanzin@gmail.com", "Genilto Vanzin");
-//$mailer->addAddress ("to@domain.com", "To Name");
+$mailer->addAddress ("to@domain.com", "To Name");
 // $mailer->addCC ("cc@domain.com", "CC Name");
 // $mailer->addBcc("bcc@domain.com", "BCC Name");
 
