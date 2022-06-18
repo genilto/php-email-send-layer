@@ -1,6 +1,7 @@
 <?php
 /**
- * For PHPMailer you must define the adapter like below
+ * For PHPMailer using SMTP configuration you must define the adapter like below
+ * Using SMTP
  */
 // function DEFAULT_EMAIL_ADAPTER () {
 //     return new SBPHPMailerAdapter(
@@ -9,6 +10,13 @@
 //         getenv('MAIL_SMTP_USER'),
 //         getenv('MAIL_SMTP_PASSWORD')
 //     );
+// };
+
+/**
+ * For PHPMailer using mail function you must define the adapter like below
+ */
+// function DEFAULT_EMAIL_ADAPTER () {
+//     return new SBPHPMailerAdapter();
 // };
 
 /**

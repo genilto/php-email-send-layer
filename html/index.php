@@ -1,8 +1,5 @@
 <?php
 
-// Load Composer's autoloader
-require_once __DIR__ . '/../vendor/autoload.php';
-
 // Load SBMailer Class
 require_once ( __DIR__ . '/../src/SBMailer.php' );
 
@@ -37,9 +34,9 @@ $mailer->setBody("HTML body <b>bold</b>");
 
 // Sends the email
 if ($mailer->send ()) {
-    echo "Email sent.";
+    echo "Email has been sent.";
 } else {
-    echo $mailer->ErrorInfo;
+    echo $mailer->getErrorInfo();
 }
 
 // // When exceptions enabled
