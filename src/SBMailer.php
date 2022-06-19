@@ -1,12 +1,5 @@
 <?php
 
-// define ("SB_PHPMAILER_PATH", __DIR__ . "/../vendor/phpmailer/phpmailer/src");
-// require_once ( SB_PHPMAILER_PATH . '/Exception.php' );
-// require_once ( SB_PHPMAILER_PATH . '/PHPMailer.php' );
-// require_once ( SB_PHPMAILER_PATH . '/SMTP.php' );
-
-// require_once ( __DIR__ . "/../vendor/sendgrid/sendgrid/sendgrid-php.php" );
-
 // Load Composer's autoloader of project
 require_once ( __DIR__ . '/../vendor/autoload.php' );
 
