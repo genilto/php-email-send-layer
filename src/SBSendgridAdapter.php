@@ -1,4 +1,5 @@
 <?php
+
 class SBSendgridAdapter implements iSBMailerAdapter {
 
     private $apiKey;

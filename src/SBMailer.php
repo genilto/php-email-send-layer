@@ -1,14 +1,5 @@
 <?php
 
-// Load Composer's autoloader of project
-require_once ( __DIR__ . '/../vendor/autoload.php' );
-
-// Load all the classes of the project
-require_once ( __DIR__ . '/SBMailerUtils.php' );
-require_once ( __DIR__ . '/iSBMailerAdapter.php' );
-require_once ( __DIR__ . '/SBSendgridAdapter.php' );
-require_once ( __DIR__ . '/SBPHPMailerAdapter.php' );
-
 class SBMailer implements iSBMailerAdapter {
 
     /**

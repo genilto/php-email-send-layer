@@ -5,7 +5,7 @@ $result = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Load SBMailer Class
-    require_once ( __DIR__ . '/../src/SBMailer.php' );
+    require_once ( __DIR__ . '/../SBMailer.php' );
 
     // Import the configurations
     require_once ( __DIR__ . '/configuration.php' );
