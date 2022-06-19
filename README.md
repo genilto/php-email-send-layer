@@ -49,11 +49,6 @@ composer install
 
 The command above will install PHPMailer library and Sendgrid library.
 
-After that, you need to configure the informations in the example in index.php file.
-Just take a look at the code and change de from, to and other informations before run.
-
-Don't forget that!
-
 # How to run the example
 
 You can run directly using some local server, as apache and php, just pointing the server to html folder of the project.
@@ -69,4 +64,4 @@ To create the container just use the command below in your terminal:
 docker-compose up -d
 ```
 
-To test the example, just go to http://localhost:85 in your browser. If you have configured the correct informations, the recipients will receive the email correctly.
+To test the example, just go to http://localhost:85 in your browser. If you have configured the correct informations, you can use the form to send a test email.
