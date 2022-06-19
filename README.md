@@ -1,4 +1,4 @@
-# php-email-send-layer
+# SBMailer
 A small layer created to abstract the ways to send emails with php.
 
 # Email Adapters
