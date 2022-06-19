@@ -13,9 +13,11 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
      * @param string $apiKey
      */
     public function __construct ($smtpServer = '', $smtpPort = '', $smtpUser = '', $smtpPassword = '') {
-        $this->mailer = new PHPMailer(true);
+        $this->mailer = new PHPMailer(true); // Enable Exceptions
+        $this->mailer->isHTML(true); // Defaults to HTML Body
+
         // Server settings
-        // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;                  //Enable verbose debug output
+        // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;                        //Enable verbose debug output
         if (!empty($smtpServer)) {
             $this->mailer->isSMTP();                                    //Send using SMTP
             $this->mailer->Host       = $smtpServer;                    //Set the SMTP server to send through
@@ -47,8 +49,10 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->mailer->Subject = $subject;
     }
+    public function isHTML($isHtml = true) {
+        $this->mailer->isHTML($isHtml);
+    }
     public function setBody($body) {
-        $this->mailer->isHTML(true); // Set email format to HTML
         $this->mailer->Body = $body;
     }
     public function setAltBody($altBody) {

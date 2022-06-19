@@ -18,9 +18,41 @@ require_once ( __DIR__ . '/SBPHPMailerAdapter.php' );
 
 class SBMailer implements iSBMailerAdapter {
 
+    /**
+     * Keep straight compatibility to PHPMailer
+     * When migrating from PHPMailer to SBMailer, We can just change the 
+     * imports and the instance of the object, everithing else would work
+     * like a charm
+     */
+    public $ErrorInfo = '';
+
+    /**
+     * The Subject of the message.
+     *
+     * @var string
+     */
+    public $Subject = '';
+
+    /**
+     * An HTML or plain text message body.
+     * If HTML then call isHTML(true).
+     *
+     * @var string
+     */
+    public $Body = '';
+
+    /**
+     * The plain-text message body.
+     * This body can be read by mail clients that do not have HTML email
+     * capability such as mutt & Eudora.
+     * Clients that can read HTML will view the normal Body.
+     *
+     * @var string
+     */
+    public $AltBody = '';
+
     private $mailAdapter;
     private $enableExcetions;
-    private $errorInfo;
 
     public function __construct ($mailAdapter, $enableExcetions = false) {
         $this->mailAdapter = $mailAdapter;
@@ -66,25 +98,49 @@ class SBMailer implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->mailAdapter->setSubject( $subject );
     }
+    public function isHTML($isHtml = true) {
+        $this->mailAdapter->isHTML($isHtml);
+    }
     public function setBody($body) {
         $this->mailAdapter->setBody($body);
     }
     public function setAltBody($altBody) {
         $this->mailAdapter->setAltBody($altBody);
     }
+    /**
+     * Adjust for PHPMailer compatibility
+     */
+    private function adjustCompatibility () {
+        if (!empty($this->Subject)) {
+            $this->setSubject( $this->Subject );
+        }
+        if (!empty($this->Body)) {
+            $this->setBody( $this->Body );
+        }
+        if (!empty($this->AltBody)) {
+            $this->setAltBody( $this->AltBody );
+        }
+    }
+
     public function send () {
+        
+        $this->adjustCompatibility();
+
         try {
             $this->mailAdapter->send();
             return true;
         } catch (\Exception $e) {
-            $this->errorInfo = "Email was NOT sent. Error: " . $e->getMessage();
+            $this->ErrorInfo = $e->getMessage();
+            if (empty($this->ErrorInfo)) {
+                $this->ErrorInfo = "Email was not sent! No details found!";
+            }
             if ($this->enableExcetions) {
-                throw new \Exception( $this->errorInfo );
+                throw new \Exception( $this->ErrorInfo );
             }
         }
         return false;
     }
     public function getErrorInfo() {
-        return $this->errorInfo;
+        return $this->ErrorInfo;
     }
 }

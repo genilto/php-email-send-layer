@@ -57,9 +57,16 @@ interface iSBMailerAdapter
     public function setSubject($subject);
 
     /**
+     * Sets message type to HTML or plain.
+     *
+     * @param bool $isHtml True for HTML mode
+     */
+    public function isHTML($isHtml = true);
+
+    /**
      * Sets the email body
      *
-     * @param string $body HTML body of the email
+     * @param string $body of the email
      */
     public function setBody($body);
 

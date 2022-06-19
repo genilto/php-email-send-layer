@@ -3,6 +3,7 @@ class SBSendgridAdapter implements iSBMailerAdapter {
 
     private $apiKey;
     private $email;
+    private $contentType = SBMailerUtils::CONTENT_TYPE_TEXT_HTML;
     
     /**
      * Create a sendgrid Adapter
@@ -47,11 +48,18 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->email->setSubject( $subject );
     }
+    public function isHTML($isHtml = true) {
+        if ($isHtml) {
+            $this->contentType = SBMailerUtils::CONTENT_TYPE_TEXT_HTML;
+        } else {
+            $this->contentType = SBMailerUtils::CONTENT_TYPE_PLAINTEXT;
+        }
+    }
     public function setBody($body) {
-        $this->email->addContent("text/html", $body);
+        $this->email->addContent($this->contentType, $body);
     }
     public function setAltBody($altBody) {
-        $this->email->addContent("text/plain", $altBody);
+        $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $altBody);
     }
     public function send () {
         $sendgrid = new \SendGrid($this->apiKey);
@@ -63,8 +71,9 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         // print_r( $response->body() ) . "\n";
         // echo "</pre>";
 
+        // Verify the response code from Sendgrid
         if ($response->statusCode() < 200 || $response->statusCode() > 299) {
-            $errorMessage = "Sendgrid returned Status code: " . $response->statusCode() . ". Details: ";
+            $errorMessage = "Status Code returned by Sendgrid: " . $response->statusCode() . ". Details: ";
             
             if (!empty($response->body())) {
                 $response = json_decode($response->body());

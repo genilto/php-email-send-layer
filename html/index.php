@@ -59,8 +59,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Set the subject and the email body
     // Always HTML body
     $mailer->setSubject(getInput("subject"));
+    //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
+
+    //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
     $mailer->setBody(getInput("body", true));
+    //$mailer->Body = getInput("body", true); // PHPMailer compatibility
+
     //$mailer->setAltBody("Alternative Body when reader does not support HTML");
+    //$mailer->AltBody = "Alternative Body when reader does not support HTML"; // PHPMailer compatibility
 
     // Sends the email
     if ($mailer->send ()) {
