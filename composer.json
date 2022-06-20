@@ -21,5 +21,16 @@
     "require": {
         "phpmailer/phpmailer": "^6.6",
         "sendgrid/sendgrid": "^7.11"
+    },
+    "archive": {
+        "exclude": [
+            ".DS_Store",
+            ".gitignore",
+            "*.yml",
+            "env.sample",
+            "composer.*",
+            "dist/",
+            "html/"
+        ]
     }
 }
