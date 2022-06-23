@@ -23,11 +23,20 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
     //     return new SBPHPMailerAdapter();
     // };
 
+    // /**
+    //  * For Sendgrid you must define the adapter like below
+    //  */
+    // function DEFAULT_EMAIL_ADAPTER () {
+    //     return new SBSendgridAdapter(
+    //         getenv('MAIL_API_KEY')
+    //     );
+    // };
+
     /**
-     * For Sendgrid you must define the adapter like below
+     * For Sendinblue you must define the adapter like below
      */
     function DEFAULT_EMAIL_ADAPTER () {
-        return new SBSendgridAdapter(
+        return new SBSendinblueAdapter(
             getenv('MAIL_API_KEY')
         );
     };

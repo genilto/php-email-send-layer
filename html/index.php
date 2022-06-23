@@ -1,14 +1,71 @@
 <?php
 
+// Load SBMailer Class
+require_once ( __DIR__ . '/../SBMailer.php' );
+
+// Import the configurations
+require_once ( __DIR__ . '/configuration.php' );
+
+// require_once ( __DIR__ . '/../SBMailer.php' );
+
+// /**
+//  * Clean up the path to be used in html and adds domain if needed
+//  * @param path string original path
+//  * @return string Path fixed
+//  */
+// function fixPath ($path, $addDomain = false) {
+//    $fixedPath = $path;
+
+//    // Remove the beggining if found
+//    if (substr($path, 0, 3) === '../') {
+//        $fixedPath = substr($fixedPath, 3);
+//    }
+
+//    // OPTION 1 --------------------------------------------------------------
+//    // You could just to that: Replace the spaces to %20
+//    $fixedPath = str_replace(' ', '%20', $fixedPath);
+//    // end OPTION 1 ----------------------------------------------------------
+
+//    // // OPTION 2 --------------------------------------------------------------
+//    // // Extract the filename from path, and apply the rawurlencode on it
+//    // // It uses SBMailerUtils from SBMailer
+//    // // By the Way, This function (fixPath) could be added to SBMailerUtils
+//    // // And you could use it like that:
+//    // // $bundlepiclg = SBMailerUtils::fixPath($bundlepiclg, true);
+//    // $filename = (string) SBMailerUtils::mb_pathinfo($path, PATHINFO_BASENAME);
+//    // // Replaces the path with the new filename
+//    // $fixedPath = str_replace($filename, rawurlencode($filename), $fixedPath);
+//    // // end OPTION 2 ----------------------------------------------------------
+
+//    // Add the domain if true
+//    if ($addDomain) {
+//        $fixedPath = 'https://www.stonebasyx.com/' . $fixedPath;
+//    }
+
+//    return $fixedPath;
+// }
+
+// // Using it
+// $bundlepiclg = "../_siteadmin2015/bundlepics/lg/113-229-5-281 Slab No _ 39.jpeg";
+// $bundlepiclg = fixPath($bundlepiclg, true);
+
+// echo $bundlepiclg;
+
+// die;
+
 $result = "";
 
+// Creates the default mailer instance as configurations
+$mailer = SBMailer::createDefault();
+if ($mailer->send ()) {
+   $result = "Email has been sent.";
+} else {
+   $result = $mailer->getErrorInfo();
+}
+
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    // Load SBMailer Class
-    require_once ( __DIR__ . '/../SBMailer.php' );
-
-    // Import the configurations
-    require_once ( __DIR__ . '/configuration.php' );
 
     function getInput($field, $enableHtml = false) {
         if (isset($_POST[$field])) {
