@@ -5,7 +5,7 @@ class SBMailer implements iSBMailerAdapter {
     /**
      * Keep straight compatibility to PHPMailer
      * When migrating from PHPMailer to SBMailer, We can just change the 
-     * imports and the instance of the object, everithing else would work
+     * imports and the instance of the object, everything else must work
      * like a charm
      */
     public $ErrorInfo = '';
@@ -105,10 +105,15 @@ class SBMailer implements iSBMailerAdapter {
         return $this->mailAdapter->addBcc($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addAttachment($path, $name = '') {
-        $this->mailAdapter->addAttachment(
-                $path,
-                $name
-            );
+        try {
+            return $this->mailAdapter->addAttachment(
+                    $path,
+                    $name
+                );
+        } catch (Exception $e) {
+            $this->ErrorInfo = $e->getMessage();
+            return false;
+        }
     }
     public function setSubject($subject) {
         $this->mailAdapter->setSubject( $subject );
@@ -125,7 +130,7 @@ class SBMailer implements iSBMailerAdapter {
     /**
      * Adjust for PHPMailer compatibility
      */
-    private function adjustCompatibility () {
+    private function handleCompatibility () {
         if (!empty($this->Subject)) {
             $this->setSubject( $this->Subject );
         }
@@ -139,7 +144,7 @@ class SBMailer implements iSBMailerAdapter {
 
     public function send () {
         
-        $this->adjustCompatibility();
+        $this->handleCompatibility();
 
         try {
             $this->mailAdapter->send();

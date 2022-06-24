@@ -245,4 +245,46 @@ class SBMailerUtils {
         } 
         return '';
     }
+
+    /**
+     * Reads entire file into a string
+     * 
+     * @param string $path
+     * 
+     * @return string The function returns the read data
+     * 
+     * @throws Exception when not possible to read the file
+     */
+    public static function getFileContents ($path) {
+        $contents = @file_get_contents($path);
+        if ($contents === false) {
+            throw new Exception("File Not found");
+        }
+        return $contents;
+    }
+
+    /**
+     * Return the error description of the uploaded file
+     * 
+     * @param string $path
+     * 
+     * @return string|false The function returns the error description or false on failure.
+     */
+    public static function getUploadErrorDescription ($uploadErrorCode) {
+        $phpFileUploadErrors = array(
+            //0 => 'There is no error, the file uploaded with success',
+            1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+            2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+            3 => 'The uploaded file was only partially uploaded',
+            4 => 'No file was uploaded',
+            6 => 'Missing a temporary folder',
+            7 => 'Failed to write file to disk.',
+            8 => 'A PHP extension stopped the file upload.',
+        );
+
+        if (isset($uploadErrorCode[$phpFileUploadErrors])) {
+            return $uploadErrorCode[$phpFileUploadErrors];
+        }
+        return false;
+    }
 }

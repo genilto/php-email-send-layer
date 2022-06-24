@@ -6,7 +6,7 @@ require_once ( __DIR__ . '/../SBMailer.php' );
 // Import the configurations
 require_once ( __DIR__ . '/configuration.php' );
 
-$result = "";
+$result = array();
 
 $from = "";
 $fromName = "";
@@ -23,87 +23,106 @@ $body = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    function getInput($field, $enableHtml = false) {
-        if (isset($_POST[$field])) {
-            $data = trim($_POST[$field]);
-            $data = stripslashes($data);
-            if (!$enableHtml) {
-                $data = htmlspecialchars($data);
-            }
-            return $data;
-        }
-        return "";
-     }
+   function getInput($field, $enableHtml = false) {
+      if (isset($_POST[$field])) {
+         $data = trim($_POST[$field]);
+         $data = stripslashes($data);
+         if (!$enableHtml) {
+               $data = htmlspecialchars($data);
+         }
+         return $data;
+      }
+      return "";
+   }
 
-    // Creates the default mailer instance as configurations
-    $mailer = SBMailer::createDefault();
+   // Creates the default mailer instance as configurations
+   $mailer = SBMailer::createDefault();
 
-    // Defining true would enable Exceptions
-    // $mailer = SBMailer::createDefault(true);
+   // Defining true would enable Exceptions
+   // $mailer = SBMailer::createDefault(true);
 
-    // Set the From fields of email
-    $from = getInput("from");
-    $fromName = getInput("fromName");
-    $mailer->setFrom($from, $fromName);
-    
-    $replyTo = getInput("replyTo");
-    $replyToName = getInput("replyToName");
-    if (!empty($replyTo)) {
-        $mailer->addReplyTo($replyTo, $replyToName);
-    }
+   // Set the From fields of email
+   $from = getInput("from");
+   $fromName = getInput("fromName");
+   $mailer->setFrom($from, $fromName);
+   
+   $replyTo = getInput("replyTo");
+   $replyToName = getInput("replyToName");
+   if (!empty($replyTo)) {
+      $mailer->addReplyTo($replyTo, $replyToName);
+   }
 
-    // Add recipients
-    $to = getInput("to");
-    $toName = getInput("toName");
-    $mailer->addAddress ($to, $toName);
-    
-    // CC
-    $cc = getInput("cc");
-    $ccName = getInput("ccName");
-    if (!empty($cc)) {
-        $mailer->addCC($cc, $ccName);
-    }
-    
-    // BCC
-    $bcc = getInput("bcc");
-    $bccName = getInput("bccName");
-    if (!empty($bcc)) {
-        $mailer->addBcc($bcc, $bccName);
-    }
+   // Add recipients
+   $to = getInput("to");
+   $toName = getInput("toName");
+   $mailer->addAddress ($to, $toName);
+   
+   // CC
+   $cc = getInput("cc");
+   $ccName = getInput("ccName");
+   if (!empty($cc)) {
+      $mailer->addCC($cc, $ccName);
+   }
+   
+   // BCC
+   $bcc = getInput("bcc");
+   $bccName = getInput("bccName");
+   if (!empty($bcc)) {
+      $mailer->addBcc($bcc, $bccName);
+   }
 
-    // Add attachments
-    if (isset($_FILES['attach']) && !empty($_FILES['attach']["tmp_name"])) {
-        $mailer->addAttachment( $_FILES['attach']['tmp_name'], $_FILES['attach']['name']);
-    }
+   // Add attachments
+   if (isset($_FILES['attach']) && $_FILES['attach']['name']) {
+      $errorCode = isset($_FILES['attach']["error"]) ? $_FILES['attach']["error"] : 0;
 
-    // Set the subject and the email body
-    // Always HTML body
-    $subject = getInput("subject");
-    $mailer->setSubject($subject);
-    //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
+      if ($errorCode !== UPLOAD_ERR_OK) {
+         $result[] = "Attachment (".$_FILES['attach']['name'].") not added due to error: " . 
+            SBMailerUtils::getUploadErrorDescription($errorCode);
+      } else {
+         $success = $mailer->addAttachment( $_FILES['attach']['tmp_name'], $_FILES['attach']['name']);
+         if (!$success) {
+            $result[] = "Some error when adding Attachment (" . 
+               $_FILES['attach']['name'] . 
+               "). Details: " . 
+               $mailer->getErrorInfo();
+         }
+      }
+   }
 
-    //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
-    $body = getInput("body");
-    $mailer->setBody(getInput("body", true));
-    //$mailer->Body = getInput("body", true); // PHPMailer compatibility
+   // Another attachment?
+   // $success = $mailer->addAttachment( __DIR__ . "/attachment.pdf");
+   // if (!$success) {
+   //    $result[] = "Attachment not included! Details: " . $mailer->getErrorInfo();
+   // }
+   
+   // Set the subject and the email body
+   // Always HTML body
+   $subject = getInput("subject");
+   $mailer->setSubject($subject);
+   //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
 
-    //$mailer->setAltBody("Alternative Body when reader does not support HTML");
-    //$mailer->AltBody = "Alternative Body when reader does not support HTML"; // PHPMailer compatibility
+   //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
+   $body = getInput("body", true);
+   $mailer->setBody($body);
+   //$mailer->Body = getInput("body", true); // PHPMailer compatibility
 
-    // Sends the email
-    if ($mailer->send ()) {
-        $result = "Email has been sent.";
-    } else {
-        $result = $mailer->getErrorInfo();
-    }
+   //$mailer->setAltBody("Alternative Body when reader does not support HTML");
+   //$mailer->AltBody = "Alternative Body when reader does not support HTML"; // PHPMailer compatibility
 
-    // // When exceptions enabled
-    // try {
-    //     $mailer->send ();
-    //     echo "Email sent.";
-    // } catch (Exception $e) {
-    //     echo $e->getMessage();
-    // }
+   // Sends the email
+   if ($mailer->send ()) {
+      $result[] = "SUCCESS! Email has been sent.";
+   } else {
+      $result[] = $mailer->getErrorInfo();
+   }
+
+   // // When exceptions enabled
+   // try {
+   //     $mailer->send ();
+   //     echo "Email sent.";
+   // } catch (Exception $e) {
+   //     echo $e->getMessage();
+   // }
 
 }
 ?><html>
@@ -132,7 +151,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
      
    <h2>Test New Email</h2>
    
-   <p><span class = "error"><?php echo $result; ?></span></p>
+   <p><span class = "error"><?php 
+      if (count($result) > 0) {
+         echo "Messages: <ul>";
+         foreach($result as $error) {
+            echo "<li>" . $error . "</li>";
+         }
+         echo "</ul>";
+      }
+   ?></span></p>
    
    <form method="POST" enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
       <table>
@@ -172,8 +199,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          <tr>
             <td class="header">Attachment:</td>
             <td colspan="2">
-                <input type="hidden" name="MAX_FILE_SIZE" value="10000" />
-                <input name="attach" type="file" />
+                <input name="attach" type="file" value="" />
             </td>
          </tr>
          <tr>

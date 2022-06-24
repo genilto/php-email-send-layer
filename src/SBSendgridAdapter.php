@@ -35,20 +35,18 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         return true;
     }
     public function addAttachment($path, $name = '') {
-        $file_encoded = base64_encode(file_get_contents($path));
-
-        // Try to work it out from the file name
+        $contents = SBMailerUtils::getFileContents($path);
+        $file_encoded = base64_encode( $contents );
         $type = SBMailerUtils::filenameToType($path);
-
         if ('' === $name) {
             $name = (string) SBMailerUtils::mb_pathinfo($path, PATHINFO_BASENAME);
         }
-
         $this->email->addAttachment(
                 $file_encoded,
                 $type,
                 $name
             );
+        return true;
     }
     public function setSubject($subject) {
         $this->email->setSubject( $subject );
@@ -70,24 +68,15 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         $sendgrid = new \SendGrid($this->apiKey);
         $response = $sendgrid->send($this->email);
 
-        // echo "<pre>";
-        // print $response->statusCode() . "\n";
-        // print_r($response->headers());
-        // print_r( $response->body() ) . "\n";
-        // echo "</pre>";
-
         // Verify the response code from Sendgrid
         if ($response->statusCode() < 200 || $response->statusCode() > 299) {
             $errorMessage = "Status Code returned by Sendgrid: " . $response->statusCode() . ". Details: ";
             
             if (!empty($response->body())) {
-                $response = json_decode($response->body());
+                $data = json_decode($response->body());
                 
-                if (isset($response->errors) && is_array($response->errors)) {
-                    // echo "<pre>";
-                    // print_r($response->errors);
-                    // echo "</pre>";
-                    foreach($response->errors as $error) {
+                if (isset($data->errors) && is_array($data->errors)) {
+                    foreach($data->errors as $error) {
                         if (isset($error->message) && !empty($error->message)) {
                             $errorMessage .= $error->message;
                         }
@@ -98,5 +87,6 @@ class SBSendgridAdapter implements iSBMailerAdapter {
             }
             throw new Exception($errorMessage);
         }
+        return true;
     }
 }

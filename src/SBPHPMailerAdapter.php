@@ -45,7 +45,7 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
         return $this->mailer->addBcc($address, $name);
     }
     public function addAttachment($path, $name = '') {
-        $this->mailer->addAttachment($path, $name);
+        return $this->mailer->addAttachment($path, $name);
     }
     public function setSubject($subject) {
         $this->mailer->Subject = $subject;
@@ -61,7 +61,7 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     }
     public function send () {
         try {
-            $this->mailer->send();
+            return $this->mailer->send();
         } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }
