@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mailer:
-    image: php:7.3.3-apache
+    image: php:${PHP_VERSION}-apache
     container_name: mailer
     restart: unless-stopped
     ports:
