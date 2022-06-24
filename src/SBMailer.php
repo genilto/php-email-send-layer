@@ -5,7 +5,7 @@ class SBMailer implements iSBMailerAdapter {
     /**
      * Keep straight compatibility to PHPMailer
      * When migrating from PHPMailer to SBMailer, We can just change the 
-     * imports and the instance of the object, everithing else would work
+     * imports and the instance of the object, everything else must work
      * like a charm
      */
     public $ErrorInfo = '';
@@ -38,6 +38,10 @@ class SBMailer implements iSBMailerAdapter {
     private $mailAdapter;
     private $enableExcetions;
 
+    // To validate duplicates
+    private $replyToList = [];
+    private $allRecipients = [];
+
     public function __construct ($mailAdapter, $enableExcetions = false) {
         $this->mailAdapter = $mailAdapter;
         $this->enableExcetions = $enableExcetions;
@@ -59,25 +63,57 @@ class SBMailer implements iSBMailerAdapter {
     }
 
     public function setFrom($address, $name = '') {
-        $this->mailAdapter->setFrom($address, $name);
+        $this->mailAdapter->setFrom(
+            SBMailerUtils::cleanAddress($address), 
+            SBMailerUtils::cleanName($name));
+    }
+    private function hasDuplicates (&$list, $kind, $address) {
+        // Validate if it is already added
+        $a = strtolower($address);
+        if (array_key_exists($a, $list)) {
+            return true;
+        }
+        $list[$a] = array("kind" => $kind, "address" => $address);
+        return false;
     }
     public function addReplyTo($address, $name = '') {
-        $this->mailAdapter->addReplyTo($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->replyToList, "replyTo", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addReplyTo($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addAddress ($address, $name = '') {
-        $this->mailAdapter->addAddress($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "to", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addAddress($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addCC($address, $name = '') {
-        $this->mailAdapter->addCC($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "cc", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addCC($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addBcc($address, $name = '') {
-        $this->mailAdapter->addBcc($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "bcc", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addBcc($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addAttachment($path, $name = '') {
-        $this->mailAdapter->addAttachment(
-                $path,
-                $name
-            );
+        try {
+            return $this->mailAdapter->addAttachment(
+                    $path,
+                    $name
+                );
+        } catch (Exception $e) {
+            $this->ErrorInfo = $e->getMessage();
+            return false;
+        }
     }
     public function setSubject($subject) {
         $this->mailAdapter->setSubject( $subject );
@@ -94,7 +130,7 @@ class SBMailer implements iSBMailerAdapter {
     /**
      * Adjust for PHPMailer compatibility
      */
-    private function adjustCompatibility () {
+    private function handleCompatibility () {
         if (!empty($this->Subject)) {
             $this->setSubject( $this->Subject );
         }
@@ -108,7 +144,7 @@ class SBMailer implements iSBMailerAdapter {
 
     public function send () {
         
-        $this->adjustCompatibility();
+        $this->handleCompatibility();
 
         try {
             $this->mailAdapter->send();

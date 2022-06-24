@@ -20,7 +20,23 @@
     ],
     "require": {
         "phpmailer/phpmailer": "^6.6",
+<<<<<<< HEAD
         "sendgrid/sendgrid": "^7.11",
         "sendinblue/api-v3-sdk": "8.x.x"
+=======
+        "sendgrid/sendgrid": "^7.11"
+    },
+    "archive": {
+        "exclude": [
+            ".DS_Store",
+            ".gitignore",
+            "*.yml",
+            ".env*",
+            "env.sample",
+            "composer.*",
+            "dist/",
+            "html/"
+        ]
+>>>>>>> develop
     }
 }

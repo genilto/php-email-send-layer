@@ -33,19 +33,19 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
         $this->mailer->setFrom($address, $name);
     }
     public function addReplyTo($address, $name = '') {
-        $this->mailer->addReplyTo($address, $name);
+        return $this->mailer->addReplyTo($address, $name);
     }
     public function addAddress ($address, $name = '') {
-        $this->mailer->addAddress($address, $name);
+        return $this->mailer->addAddress($address, $name);
     }
     public function addCC($address, $name = '') {
-        $this->mailer->addCc($address, $name);
+        return $this->mailer->addCc($address, $name);
     }
     public function addBcc($address, $name = '') {
-        $this->mailer->addBcc($address, $name);
+        return $this->mailer->addBcc($address, $name);
     }
     public function addAttachment($path, $name = '') {
-        $this->mailer->addAttachment($path, $name);
+        return $this->mailer->addAttachment($path, $name);
     }
     public function setSubject($subject) {
         $this->mailer->Subject = $subject;
@@ -61,7 +61,7 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     }
     public function send () {
         try {
-            $this->mailer->send();
+            return $this->mailer->send();
         } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }

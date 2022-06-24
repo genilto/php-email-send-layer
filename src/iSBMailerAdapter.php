@@ -15,6 +15,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addReplyTo($address, $name = '');
 
@@ -23,6 +24,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addAddress ($address, $name = '');
 
@@ -31,6 +33,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addCC($address, $name = '');
 
@@ -39,14 +42,23 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addBcc($address, $name = '');
 
     /**
-     * Add an attachment to the email
+     * Add an attachment from a path on the filesystem.
+     * Never use a user-supplied path to a file!
+     * Returns false if the file could not be found or read.
+     * Explicitly *does not* support passing URLs; It is not an HTTP client.
+     * If you need to do that, fetch the resource yourself and pass it in via a local file
      *
      * @param string $path Path of the file in server filesystem
      * @param string $name Name to display the attachment in email
+     * 
+     * @throws Exception
+     *
+     * @return bool
      */
     public function addAttachment($path, $name = '');
 
@@ -83,6 +95,8 @@ interface iSBMailerAdapter
      * Sends the email
      * 
      * @throws \Exception
+     * 
+     * @return bool false on error - See the ErrorInfo property for details of the error
      */
     public function send ();
 }

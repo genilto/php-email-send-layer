@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mailer:
-    image: php:8-apache
+    image: php:${PHP_VERSION}-apache
     container_name: mailer
     restart: unless-stopped
     ports:
@@ -12,6 +12,8 @@ services:
       - MAIL_SMTP_PORT=${MAIL_SMTP_PORT}
       - MAIL_SMTP_USER=${MAIL_SMTP_USER}
       - MAIL_SMTP_PASSWORD=${MAIL_SMTP_PASSWORD}
-      - MAIL_API_KEY=${MAIL_API_KEY}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - MAILERSEND_API_KEY=${MAILERSEND_API_KEY}
     volumes:
+      - ./custom_php.ini:/usr/local/etc/php/conf.d/custom_php.ini
       - .:/var/www

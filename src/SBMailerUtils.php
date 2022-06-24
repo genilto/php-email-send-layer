@@ -204,4 +204,87 @@ class SBMailerUtils {
         return static::_mime_types($ext);
     }
 
+    /**
+     * Validate if email address is valid
+     * 
+     * @param string $address the email address
+     * 
+     * @return bool true if email is valid
+     */
+    public static function validateAddress ($address) {
+        return filter_var($address, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /**
+     * Clean up the email address. Currently just apply a trim
+     * Remove spaces from left and right
+     * 
+     * @param string $address the email address
+     * 
+     * @return string fixed email address
+     */
+    public static function cleanAddress ($address) {
+        if ($address !== null) {
+            $address = trim($address);
+            return $address;
+        }
+        return '';
+    }
+
+    /**
+     * Clean up the name
+     * Strip breaks and trim
+     * 
+     * @param string $name
+     * 
+     * @return string fixed name
+     */
+    public static function cleanName ($name) {
+        if ($name !== null) {
+            return trim(preg_replace('/[\r\n]+/', '', $name));
+        } 
+        return '';
+    }
+
+    /**
+     * Reads entire file into a string
+     * 
+     * @param string $path
+     * 
+     * @return string The function returns the read data
+     * 
+     * @throws Exception when not possible to read the file
+     */
+    public static function getFileContents ($path) {
+        $contents = @file_get_contents($path);
+        if ($contents === false) {
+            throw new Exception("File Not found");
+        }
+        return $contents;
+    }
+
+    /**
+     * Return the error description of the uploaded file
+     * 
+     * @param string $path
+     * 
+     * @return string|false The function returns the error description or false on failure.
+     */
+    public static function getUploadErrorDescription ($uploadErrorCode) {
+        $phpFileUploadErrors = array(
+            //0 => 'There is no error, the file uploaded with success',
+            1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+            2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+            3 => 'The uploaded file was only partially uploaded',
+            4 => 'No file was uploaded',
+            6 => 'Missing a temporary folder',
+            7 => 'Failed to write file to disk.',
+            8 => 'A PHP extension stopped the file upload.',
+        );
+
+        if (isset($uploadErrorCode[$phpFileUploadErrors])) {
+            return $uploadErrorCode[$phpFileUploadErrors];
+        }
+        return false;
+    }
 }
