@@ -20,15 +20,19 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     }
     public function addReplyTo($address, $name = '') {
         $this->email->setReplyTo($address, $name);
+        return true;
     }
     public function addAddress ($address, $name = '') {
         $this->email->addTo($address, $name);
+        return true;
     }
     public function addCC($address, $name = '') {
         $this->email->addCc($address, $name);
+        return true;
     }
     public function addBcc($address, $name = '') {
         $this->email->addBcc($address, $name);
+        return true;
     }
     public function addAttachment($path, $name = '') {
         $file_encoded = base64_encode(file_get_contents($path));

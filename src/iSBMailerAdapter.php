@@ -15,6 +15,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addReplyTo($address, $name = '');
 
@@ -23,6 +24,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addAddress ($address, $name = '');
 
@@ -31,6 +33,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addCC($address, $name = '');
 
@@ -39,6 +42,7 @@ interface iSBMailerAdapter
      *
      * @param string $address
      * @param string $name
+     * @return bool true on success, false if address already used or invalid in some way
      */
     public function addBcc($address, $name = '');
 

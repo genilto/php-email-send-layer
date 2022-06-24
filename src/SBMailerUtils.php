@@ -204,4 +204,45 @@ class SBMailerUtils {
         return static::_mime_types($ext);
     }
 
+    /**
+     * Validate if email address is valid
+     * 
+     * @param string $address the email address
+     * 
+     * @return bool true if email is valid
+     */
+    public static function validateAddress ($address) {
+        return filter_var($address, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /**
+     * Clean up the email address. Currently just apply a trim
+     * Remove spaces from left and right
+     * 
+     * @param string $address the email address
+     * 
+     * @return string fixed email address
+     */
+    public static function cleanAddress ($address) {
+        if ($address !== null) {
+            $address = trim($address);
+            return $address;
+        }
+        return '';
+    }
+
+    /**
+     * Clean up the name
+     * Strip breaks and trim
+     * 
+     * @param string $name
+     * 
+     * @return string fixed name
+     */
+    public static function cleanName ($name) {
+        if ($name !== null) {
+            return trim(preg_replace('/[\r\n]+/', '', $name));
+        } 
+        return '';
+    }
 }

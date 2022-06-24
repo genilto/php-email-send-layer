@@ -38,6 +38,10 @@ class SBMailer implements iSBMailerAdapter {
     private $mailAdapter;
     private $enableExcetions;
 
+    // To validate duplicates
+    private $replyToList = [];
+    private $allRecipients = [];
+
     public function __construct ($mailAdapter, $enableExcetions = false) {
         $this->mailAdapter = $mailAdapter;
         $this->enableExcetions = $enableExcetions;
@@ -59,19 +63,46 @@ class SBMailer implements iSBMailerAdapter {
     }
 
     public function setFrom($address, $name = '') {
-        $this->mailAdapter->setFrom($address, $name);
+        $this->mailAdapter->setFrom(
+            SBMailerUtils::cleanAddress($address), 
+            SBMailerUtils::cleanName($name));
+    }
+    private function hasDuplicates (&$list, $kind, $address) {
+        // Validate if it is already added
+        $a = strtolower($address);
+        if (array_key_exists($a, $list)) {
+            return true;
+        }
+        $list[$a] = array("kind" => $kind, "address" => $address);
+        return false;
     }
     public function addReplyTo($address, $name = '') {
-        $this->mailAdapter->addReplyTo($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->replyToList, "replyTo", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addReplyTo($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addAddress ($address, $name = '') {
-        $this->mailAdapter->addAddress($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "to", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addAddress($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addCC($address, $name = '') {
-        $this->mailAdapter->addCC($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "cc", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addCC($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addBcc($address, $name = '') {
-        $this->mailAdapter->addBcc($address, $name);
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if ($this->hasDuplicates ($this->allRecipients, "bcc", $fixedAddress)) {
+            return false;
+        }
+        return $this->mailAdapter->addBcc($fixedAddress, SBMailerUtils::cleanName($name));
     }
     public function addAttachment($path, $name = '') {
         $this->mailAdapter->addAttachment(

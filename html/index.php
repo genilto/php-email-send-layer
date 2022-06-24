@@ -1,14 +1,27 @@
 <?php
 
+// Load SBMailer Class
+require_once ( __DIR__ . '/../SBMailer.php' );
+
+// Import the configurations
+require_once ( __DIR__ . '/configuration.php' );
+
 $result = "";
 
+$from = "";
+$fromName = "";
+$replayTo = "";
+$replayToName = "";
+$to = "";
+$toName = "";
+$cc = "";
+$ccName = "";
+$bcc = "";
+$bccName = "";
+$subject = "";
+$body = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    // Load SBMailer Class
-    require_once ( __DIR__ . '/../SBMailer.php' );
-
-    // Import the configurations
-    require_once ( __DIR__ . '/configuration.php' );
 
     function getInput($field, $enableHtml = false) {
         if (isset($_POST[$field])) {
@@ -29,26 +42,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // $mailer = SBMailer::createDefault(true);
 
     // Set the From fields of email
-    $mailer->setFrom(getInput("from"), getInput("fromName"));
+    $from = getInput("from");
+    $fromName = getInput("fromName");
+    $mailer->setFrom($from, $fromName);
     
     $replyTo = getInput("replyTo");
+    $replyToName = getInput("replyToName");
     if (!empty($replyTo)) {
-        $mailer->addReplyTo($replyTo, getInput("replyToName"));
+        $mailer->addReplyTo($replyTo, $replyToName);
     }
 
     // Add recipients
-    $mailer->addAddress (getInput("to"), getInput("toName"));
+    $to = getInput("to");
+    $toName = getInput("toName");
+    $mailer->addAddress ($to, $toName);
     
     // CC
     $cc = getInput("cc");
+    $ccName = getInput("ccName");
     if (!empty($cc)) {
-        $mailer->addCC($cc, getInput("ccName"));
+        $mailer->addCC($cc, $ccName);
     }
     
     // BCC
     $bcc = getInput("bcc");
+    $bccName = getInput("bccName");
     if (!empty($bcc)) {
-        $mailer->addBcc($bcc, getInput("bccName"));
+        $mailer->addBcc($bcc, $bccName);
     }
 
     // Add attachments
@@ -58,10 +78,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Set the subject and the email body
     // Always HTML body
-    $mailer->setSubject(getInput("subject"));
+    $subject = getInput("subject");
+    $mailer->setSubject($subject);
     //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
 
     //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
+    $body = getInput("body");
     $mailer->setBody(getInput("body", true));
     //$mailer->Body = getInput("body", true); // PHPMailer compatibility
 
@@ -85,8 +107,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 }
 ?><html>
-   
 <head>
+   <title>Test Email</title>
    <style>
       .error {color: #FF0000;}
       table {
@@ -116,36 +138,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <table>
          <tr>
             <td class="header">From:</td>
-            <td><input type="email" name="from" required placeholder="Email"></td>
-            <td><input type="text" name="fromName" placeholder="Name"></td>
+            <td><input type="email" name="from" value="<?php echo $from; ?>" required placeholder="Email"></td>
+            <td><input type="text" name="fromName" value="<?php echo $fromName; ?>" placeholder="Name"></td>
          </tr>
          <tr>
             <td class="header">Reply To:</td>
-            <td><input type="email" name="replyTo" placeholder="Email"></td>
-            <td><input type="text" name="replyToName" placeholder="Name"></td>
+            <td><input type="email" name="replyTo" value="<?php echo $replyTo; ?>" placeholder="Email"></td>
+            <td><input type="text" name="replyToName" value="<?php echo $replyToName; ?>" placeholder="Name"></td>
          </tr>
          <tr>
             <td class="header">To:</td>
-            <td><input type="email" name="to" required placeholder="Email"></td>
-            <td><input type="text" name="toName" placeholder="Name"></td>
+            <td><input type="email" name="to" value="<?php echo $to; ?>" required placeholder="Email"></td>
+            <td><input type="text" name="toName" value="<?php echo $toName; ?>" placeholder="Name"></td>
          </tr>
          <tr>
             <td class="header">CC:</td>
-            <td><input type="email" name="cc" placeholder="Email"></td>
-            <td><input type="text" name="ccName" placeholder="Name"></td>
+            <td><input type="email" name="cc" value="<?php echo $cc; ?>" placeholder="Email"></td>
+            <td><input type="text" name="ccName" value="<?php echo $ccName; ?>" placeholder="Name"></td>
          </tr>
          <tr>
             <td class="header">BCC:</td>
-            <td><input type="email" name="bcc" placeholder="Email"></td>
-            <td><input type="text" name="bccName" placeholder="Name"></td>
+            <td><input type="email" name="bcc" value="<?php echo $bcc; ?>" placeholder="Email"></td>
+            <td><input type="text" name="bccName" value="<?php echo $bccName; ?>" placeholder="Name"></td>
          </tr>
          <tr>
             <td class="header">Subject:</td>
-            <td colspan="2"><input type="text" name="subject" required></td>
+            <td colspan="2"><input type="text" name="subject" value="<?php echo $subject; ?>" required></td>
          </tr>
          <tr>
             <td class="header">Html Body:</td>
-            <td colspan="2"><textarea rows="5" name="body"></textarea></td>
+            <td colspan="2"><textarea rows="5" name="body"><?php echo $body; ?></textarea></td>
          </tr>
          <tr>
             <td class="header">Attachment:</td>
