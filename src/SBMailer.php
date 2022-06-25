@@ -1,6 +1,6 @@
 <?php
 
-class SBMailer implements iSBMailerAdapter {
+class SBMailer {
 
     /**
      * Keep straight compatibility to PHPMailer
@@ -37,6 +37,7 @@ class SBMailer implements iSBMailerAdapter {
 
     private $mailAdapter;
     private $enableExcetions;
+    private $isHTMLMessage = true;
 
     // To validate duplicates
     private $replyToList = [];
@@ -61,7 +62,9 @@ class SBMailer implements iSBMailerAdapter {
         }
         throw new \Exception('DEFAULT_EMAIL_ADAPTER not defined.');
     }
-
+    public function getMailerName () {
+        return $this->mailAdapter->getMailerName();
+    }
     public function setFrom($address, $name = '') {
         $this->mailAdapter->setFrom(
             SBMailerUtils::cleanAddress($address), 
@@ -116,36 +119,45 @@ class SBMailer implements iSBMailerAdapter {
         }
     }
     public function setSubject($subject) {
-        $this->mailAdapter->setSubject( $subject );
+        $this->Subject = $subject;
     }
+    /**
+     * Sets message type to HTML or plain.
+     *
+     * @param bool $isHtml True for HTML mode
+     */
     public function isHTML($isHtml = true) {
-        $this->mailAdapter->isHTML($isHtml);
+        $this->isHTMLMessage = $isHtml;
     }
     public function setBody($body) {
-        $this->mailAdapter->setBody($body);
+        $this->Body = $body;
     }
     public function setAltBody($altBody) {
         $this->mailAdapter->setAltBody($altBody);
+    }
+    public function setTag($tagName) {
+        $this->mailAdapter->setTag($tagName);
     }
     /**
      * Adjust for PHPMailer compatibility
      */
     private function handleCompatibility () {
-        if (!empty($this->Subject)) {
-            $this->setSubject( $this->Subject );
-        }
-        if (!empty($this->Body)) {
-            $this->setBody( $this->Body );
-        }
+        $this->mailAdapter->setSubject( $this->Subject );
+        
         if (!empty($this->AltBody)) {
-            $this->setAltBody( $this->AltBody );
+            $this->mailAdapter->setTextBody($this->AltBody);
+        }
+
+        if (!empty($this->Body)) {
+            if ($this->isHTMLMessage) {
+                $this->mailAdapter->setHtmlBody($this->Body);
+            } else {
+                $this->mailAdapter->setTextBody($this->AltBody);
+            }
         }
     }
-
-    public function send () {
-        
+    public function send () {        
         $this->handleCompatibility();
-
         try {
             $this->mailAdapter->send();
             return true;

@@ -13,6 +13,7 @@ services:
       - MAIL_SMTP_USER=${MAIL_SMTP_USER}
       - MAIL_SMTP_PASSWORD=${MAIL_SMTP_PASSWORD}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - POSTMARK_API_KEY=${POSTMARK_API_KEY}
       - MAILERSEND_API_KEY=${MAILERSEND_API_KEY}
     volumes:
       - ./custom_php.ini:/usr/local/etc/php/conf.d/custom_php.ini

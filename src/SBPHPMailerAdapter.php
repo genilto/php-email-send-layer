@@ -29,6 +29,9 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
             $this->mailer->Port       = $smtpPort;                      //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
         }
     }
+    public function getMailerName () {
+        return 'PHPMailer (' . $this->mailer->Mailer . ')';
+    }
     public function setFrom($address, $name = '') {
         $this->mailer->setFrom($address, $name);
     }
@@ -50,15 +53,14 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->mailer->Subject = $subject;
     }
-    public function isHTML($isHtml = true) {
-        $this->mailer->isHTML($isHtml);
-    }
-    public function setBody($body) {
+    public function setHtmlBody($body) {
+        $this->mailer->isHTML(true);
         $this->mailer->Body = $body;
     }
-    public function setAltBody($altBody) {
-        $this->mailer->AltBody = $altBody;
+    public function setTextBody($body) {
+        $this->mailer->AltBody = $body;
     }
+    public function setTag($tagName) {}
     public function send () {
         try {
             return $this->mailer->send();

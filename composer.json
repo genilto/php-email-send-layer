@@ -20,7 +20,8 @@
     ],
     "require": {
         "phpmailer/phpmailer": "^6.6",
-        "sendgrid/sendgrid": "^7.11"
+        "sendgrid/sendgrid": "^7.11",
+        "wildbit/postmark-php": "^4.0"
     },
     "archive": {
         "exclude": [

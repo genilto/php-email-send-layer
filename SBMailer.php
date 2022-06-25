@@ -7,4 +7,5 @@ require_once ( __DIR__ . '/src/SBMailerUtils.php' );
 require_once ( __DIR__ . '/src/iSBMailerAdapter.php' );
 require_once ( __DIR__ . '/src/SBSendgridAdapter.php' );
 require_once ( __DIR__ . '/src/SBPHPMailerAdapter.php' );
+require_once ( __DIR__ . '/src/SBPostmarkAdapter.php' );
 require_once ( __DIR__ . '/src/SBMailer.php' );

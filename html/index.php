@@ -35,6 +35,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       return "";
    }
 
+   /**
+     * Return the error description of the uploaded file
+     * 
+     * @param string $path
+     * 
+     * @return string|false The function returns the error description or false on failure.
+     */
+   function getUploadErrorDescription ($uploadErrorCode) {
+      $phpFileUploadErrors = array(
+          //0 => 'There is no error, the file uploaded with success',
+          1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+          2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+          3 => 'The uploaded file was only partially uploaded',
+          4 => 'No file was uploaded',
+          6 => 'Missing a temporary folder',
+          7 => 'Failed to write file to disk.',
+          8 => 'A PHP extension stopped the file upload.',
+      );
+
+      if (isset($uploadErrorCode[$phpFileUploadErrors])) {
+          return $uploadErrorCode[$phpFileUploadErrors];
+      }
+      return false;
+  }
+
    // Creates the default mailer instance as configurations
    $mailer = SBMailer::createDefault();
 
@@ -77,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       if ($errorCode !== UPLOAD_ERR_OK) {
          $result[] = "Attachment (".$_FILES['attach']['name'].") not added due to error: " . 
-            SBMailerUtils::getUploadErrorDescription($errorCode);
+            getUploadErrorDescription($errorCode);
       } else {
          $success = $mailer->addAttachment( $_FILES['attach']['tmp_name'], $_FILES['attach']['name']);
          if (!$success) {
@@ -109,19 +134,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    //$mailer->setAltBody("Alternative Body when reader does not support HTML");
    //$mailer->AltBody = "Alternative Body when reader does not support HTML"; // PHPMailer compatibility
 
+   // Adds a test category
+   $mailer->setTag("tests");
+
    // Sends the email
    if ($mailer->send ()) {
-      $result[] = "SUCCESS! Email has been sent.";
+      $result[] = "SUCCESS! Email has been sent by " . $mailer->getMailerName();
    } else {
       $result[] = $mailer->getErrorInfo();
    }
 
-   // // When exceptions enabled
+   // // When exceptions are enabled
    // try {
    //     $mailer->send ();
-   //     echo "Email sent.";
+   //     $result[] = "SUCCESS! Email has been sent by " . $mailer->getMailerName();
    // } catch (Exception $e) {
-   //     echo $e->getMessage();
+   //     $result[] = $e->getMessage();
    // }
 
 }

@@ -26,11 +26,11 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
     /**
      * For Sendgrid you must define the adapter like below
      */
-    function DEFAULT_EMAIL_ADAPTER () {
-        return new SBSendgridAdapter(
-            getenv('SENDGRID_API_KEY')
-        );
-    };
+    // function DEFAULT_EMAIL_ADAPTER () {
+    //     return new SBSendgridAdapter(
+    //         getenv('SENDGRID_API_KEY')
+    //     );
+    // };
 
     /**
      * For Mailersend you must define the adapter like below
@@ -40,4 +40,13 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
     //         getenv('MAILERSEND_API_KEY')
     //     );
     // };
+
+    /**
+     * For Sendgrid you must define the adapter like below
+     */
+    function DEFAULT_EMAIL_ADAPTER () {
+        return new SBPostmarkAdapter(
+            getenv('POSTMARK_API_KEY')
+        );
+    };
 }
