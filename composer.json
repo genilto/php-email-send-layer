@@ -31,6 +31,7 @@
             ".env*",
             "env.sample",
             "composer.*",
+            "custom_php.ini",
             "dist/",
             "html/"
         ]
