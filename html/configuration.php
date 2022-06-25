@@ -7,6 +7,7 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
      * For PHPMailer using mail function you must define the adapter like below
      */
     // function DEFAULT_EMAIL_ADAPTER () {
+    //     sbmailer_load_adapter ('phpmailer');
     //     return new SBPHPMailerAdapter();
     // };
 
@@ -15,6 +16,7 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
      * Using SMTP
      */
     // function DEFAULT_EMAIL_ADAPTER () {
+    //     sbmailer_load_adapter ('phpmailer');
     //     return new SBPHPMailerAdapter(
     //         getenv('MAIL_SMTP_SERVER'),
     //         getenv('MAIL_SMTP_PORT'),
@@ -27,6 +29,7 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
      * For Sendgrid you must define the adapter like below
      */
     // function DEFAULT_EMAIL_ADAPTER () {
+    //     sbmailer_load_adapter ('sendgrid');
     //     return new SBSendgridAdapter(
     //         getenv('SENDGRID_API_KEY')
     //     );
@@ -36,6 +39,7 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
      * For Mailersend you must define the adapter like below
      */
     // function DEFAULT_EMAIL_ADAPTER () {
+    //     sbmailer_load_adapter ('mailersend');
     //     return new SBMailersendAdapter(
     //         getenv('MAILERSEND_API_KEY')
     //     );
@@ -45,6 +49,7 @@ if (!function_exists('DEFAULT_EMAIL_ADAPTER')) {
      * For Sendgrid you must define the adapter like below
      */
     function DEFAULT_EMAIL_ADAPTER () {
+        sbmailer_load_adapter ('postmark');
         return new SBPostmarkAdapter(
             getenv('POSTMARK_API_KEY')
         );

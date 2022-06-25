@@ -4,9 +4,6 @@
     "homepage": "https://github.com/genilto/sbmailer",
     "license": "GNU",
     "keywords": [
-        "SendGrid",
-        "sendgrid",
-        "PHPMailer",
         "adapter",
         "email",
         "send",
@@ -18,11 +15,6 @@
             "email": "genilto.vanzin@gmail.com"
         }
     ],
-    "require": {
-        "phpmailer/phpmailer": "^6.6",
-        "sendgrid/sendgrid": "^7.11",
-        "wildbit/postmark-php": "^4.0"
-    },
     "archive": {
         "exclude": [
             ".DS_Store",
@@ -31,6 +23,7 @@
             ".env*",
             "env.sample",
             "composer.*",
+            "custom_php.ini",
             "dist/",
             "html/"
         ]
