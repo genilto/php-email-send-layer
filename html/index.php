@@ -177,7 +177,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body> 
      
-   <h2>Test New Email</h2>
+   <?php $emailProvider = SBMailer::createDefault()->getMailerName(); ?>
+   <h2>Test New Email (<?php echo $emailProvider; ?>)</h2>
    
    <p><span class = "error"><?php 
       if (count($result) > 0) {
