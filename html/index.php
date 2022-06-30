@@ -21,6 +21,12 @@ $bccName = "";
 $subject = "";
 $body = "";
 
+// Creates the default mailer instance as configurations
+$mailer = SBMailer::createDefault();
+
+// Or, create directly by name
+//$mailer = SBMailer::createByName('sendgrid', array('api_key' => getenv('SENDGRID_API_KEY')));
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
    function getInput($field, $enableHtml = false) {
@@ -59,9 +65,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
       return false;
   }
-
-   // Creates the default mailer instance as configurations
-   $mailer = SBMailer::createDefault();
 
    // Defining true would enable Exceptions
    // $mailer = SBMailer::createDefault(true);
@@ -123,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    // Set the subject and the email body
    // Always HTML body
    $subject = getInput("subject");
-   $mailer->setSubject($subject);
+   $mailer->setSubject($subject . " - " . $i);
    //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
 
    //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
@@ -143,7 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    } else {
       $result[] = $mailer->getErrorInfo();
    }
-
+   
    // // When exceptions are enabled
    // try {
    //     $mailer->send ();
@@ -177,7 +180,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body> 
      
-   <?php $emailProvider = SBMailer::createDefault()->getMailerName(); ?>
+   <?php $emailProvider = $mailer->getMailerName(); ?>
    <h2>Test New Email (<?php echo $emailProvider; ?>)</h2>
    
    <p><span class = "error"><?php 

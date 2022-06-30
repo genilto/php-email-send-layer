@@ -10,10 +10,10 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     /**
      * Create a sendgrid Adapter
      *
-     * @param string $apiKey
+     * @param string $params
      */
-    public function __construct ($apiKey) {
-        $this->apiKey = $apiKey;
+    public function __construct ($params) {
+        $this->apiKey = $params['api_key'];
         $this->email = new \SendGrid\Mail\Mail();
     }
     public function getMailerName () {
@@ -90,3 +90,6 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         return true;
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('sendgrid', 'SBSendgridAdapter');

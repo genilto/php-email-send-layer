@@ -10,7 +10,7 @@ use MailerSend\Exceptions\MailerSendValidationException;
 
 class SBMailersendAdapter implements iSBMailerAdapter {
 
-    private $mailersend;
+    private $apiKey;
     private $email;
     
     private $recipients = [];
@@ -21,10 +21,10 @@ class SBMailersendAdapter implements iSBMailerAdapter {
     /**
      * Create a mailersend Adapter
      *
-     * @param string $apiKey
+     * @param string $params
      */
-    public function __construct ($apiKey) {
-        $this->mailersend = new MailerSend(['api_key' => $apiKey]);
+    public function __construct ($params) {
+        $this->apiKey = $params['api_key'];
         $this->email = new EmailParams();
     }
     public function getMailerName () {
@@ -98,13 +98,14 @@ class SBMailersendAdapter implements iSBMailerAdapter {
         $this->adjustAttachments();
 
         try {
-            $this->mailersend->email->send($this->email);
+            $mailersend = new MailerSend(['api_key' => $this->apiKey]);
+            $mailersend->email->send($this->email);
             return true;
         } catch (MailerSendValidationException $e) {
             $response = $e->getResponse();
 
             $errorMessage = "Status Code returned by Mailersend: " . 
-                $response->getStatusCode();
+            $response->getStatusCode();
 
             if (!empty($response->getReasonPhrase())) {
                 $errorMessage .= " - " . $response->getReasonPhrase();
@@ -133,3 +134,6 @@ class SBMailersendAdapter implements iSBMailerAdapter {
         return false;
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('mailersend', 'SBMailersendAdapter');

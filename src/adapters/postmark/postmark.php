@@ -7,22 +7,22 @@ use Postmark\Models\PostmarkAttachment;
 
 class SBPostmarkAdapter implements iSBMailerAdapter {
 
-    private $client;
+    private $apiKey;
     private $email;
 
     /**
      * Create a Postmark Adapter
      *
-     * @param string $apiKey
+     * @param array $params
      */
-    public function __construct ($apiKey) {
-        $this->client = new PostmarkClient($apiKey);
-        $this->initializeEmail ();
+    public function __construct ($params) {
+        $this->apiKey = $params['api_key'];
+        $this->resetEmail ();
     }
     public function getMailerName () {
         return 'Postmark';
     }
-    private function initializeEmail () {
+    private function resetEmail () {
         $this->email = array(
             'From' => NULL,
             'ReplyTo' => NULL,
@@ -101,7 +101,8 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         $this->email['Tag'] = $tagName;
     }
     public function send () {
-        $sendResult = $this->client->sendEmail(
+        $client = new PostmarkClient($this->apiKey);
+        $sendResult = $client->sendEmail(
             $this->email['From'],
             $this->email['To'],
             $this->email['Subject'],
@@ -126,3 +127,6 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         return true;
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('postmark', 'SBPostmarkAdapter');

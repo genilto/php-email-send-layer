@@ -17,6 +17,7 @@
     ],
     "archive": {
         "exclude": [
+            "!vendor/*",
             ".DS_Store",
             ".gitignore",
             "*.yml",

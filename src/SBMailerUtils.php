@@ -5,6 +5,20 @@ class SBMailerUtils {
     public const CONTENT_TYPE_PLAINTEXT = 'text/plain';
     public const CONTENT_TYPE_TEXT_HTML = 'text/html';
 
+    private static $ADAPTERS = array();
+
+    public static function registerAdapter ($name, $className) {
+        self::$ADAPTERS[$name] = array (
+            'className' => $className
+        );
+    }
+    public static function existsAdapter ($name) {
+        return isset(self::$ADAPTERS[$name]);
+    }
+    public static function getAdapter ($name) {
+        return self::$ADAPTERS[$name];
+    }
+
     /**
      * Multi-byte-safe pathinfo replacement.
      * Drop-in replacement for pathinfo(), but multibyte- and cross-platform-safe.

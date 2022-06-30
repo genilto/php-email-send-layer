@@ -13,22 +13,22 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     /**
      * Create a PHPMailer Adapter
      *
-     * @param string $apiKey
+     * @param string $params
      */
-    public function __construct ($smtpServer = '', $smtpPort = '', $smtpUser = '', $smtpPassword = '') {
+    public function __construct ($params) {
         $this->mailer = new PHPMailer(true); // Enable Exceptions
         $this->mailer->isHTML(true); // Defaults to HTML Body
 
         // Server settings
         // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;                        //Enable verbose debug output
-        if (!empty($smtpServer)) {
+        if (!empty($params['smtp_server'])) {
             $this->mailer->isSMTP();                                    //Send using SMTP
-            $this->mailer->Host       = $smtpServer;                    //Set the SMTP server to send through
+            $this->mailer->Host       = $params['smtp_server'];         //Set the SMTP server to send through
             $this->mailer->SMTPAuth   = true;                           //Enable SMTP authentication
-            $this->mailer->Username   = $smtpUser;                      //SMTP username
-            $this->mailer->Password   = $smtpPassword;                  //SMTP password
+            $this->mailer->Username   = $params['smtp_user'];           //SMTP username
+            $this->mailer->Password   = $params['smtp_password'];       //SMTP password
             $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; //Enable implicit TLS encryption
-            $this->mailer->Port       = $smtpPort;                      //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+            $this->mailer->Port       = $params['smtp_port'];           //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
         }
     }
     public function getMailerName () {
@@ -71,3 +71,6 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
         }
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('phpmailer', 'SBPHPMailerAdapter');
