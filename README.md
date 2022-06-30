@@ -11,7 +11,7 @@ To configure a default adapter, you can define a constant named SBMAILER and set
 
 ## PHPMailer
 
-Send emails throw the PHPMailer library. This particular adapter allow you to not inform params, so PHPMailer will use php mail() function to send emails.
+Send emails using the PHPMailer library. This particular adapter allow you to not inform params, so PHPMailer will use php mail() function to send emails.
 
 Send Using mail() function
 
@@ -40,7 +40,7 @@ define('SBMAILER', array(
 
 ## Sendgrid
 
-Send emails throw the Sendgrid API library.
+Send emails using the Sendgrid API library.
 
 ```php
 define('SBMAILER', array(
@@ -55,7 +55,7 @@ define('SBMAILER', array(
 
 ## Postmark
 
-Send emails throw the Postmark API library.
+Send emails using the Postmark API library.
 
 ```php
 define('SBMAILER', array(
