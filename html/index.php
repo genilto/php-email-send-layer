@@ -126,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    // Set the subject and the email body
    // Always HTML body
    $subject = getInput("subject");
-   $mailer->setSubject($subject . " - " . $i);
+   $mailer->setSubject($subject);
    //$mailer->Subject = (getInput("subject")); // PHPMailer compatibility
 
    //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain

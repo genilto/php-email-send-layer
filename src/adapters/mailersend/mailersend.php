@@ -53,7 +53,7 @@ class SBMailersendAdapter implements iSBMailerAdapter {
     }
     public function addAttachment($path, $name = '') {
         $contents = SBMailerUtils::getFileContents($path);
-        if ('' === $name) {
+        if (empty($name)) {
             $name = (string) SBMailerUtils::mb_pathinfo($path, PATHINFO_BASENAME);
         }
         $this->attachments[] = new Attachment($contents, $name);
@@ -82,12 +82,12 @@ class SBMailersendAdapter implements iSBMailerAdapter {
             $this->email->setBcc($this->bcc);
         }
     }
-    public function adjustBody () {
+    private function adjustBody () {
         if (empty($this->email->getText())) {
             $this->email->setText($this->email->getHtml());
         }
     }
-    public function adjustAttachments () {
+    private function adjustAttachments () {
         if (count($this->attachments) > 0) {
             $this->email->setAttachments($this->attachments);
         }
