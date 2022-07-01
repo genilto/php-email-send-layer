@@ -74,25 +74,23 @@ class SBMailer {
      * @throws \Exception if SBMAILER contant or configurations not defined
      */
     public static function createDefault ($enableExcetions = false) {
-        if (defined('SBMAILER')) {
-            $adapterName = SBMAILER['default'];
-            $adapterParams = array();
-            if (!empty(SBMAILER['params']) && !empty(SBMAILER['params'][$adapterName])) {
-                $adapterParams = SBMAILER['params'][$adapterName];
-            }
-            return self::createByName($adapterName, $adapterParams, $enableExcetions);
+        if (!defined('SBMAILER') || empty(SBMAILER['default'])) {
+            throw new \Exception('Default configurations for SBMailer not defined in SBMAILER constant.');
         }
-        throw new \Exception('Default configurations for SBMailer not defined in SBMAILER_DEFAULT constant.');
+        $adapterName = SBMAILER['default'];
+        $adapterParams = array();
+        if (!empty(SBMAILER['params']) && !empty(SBMAILER['params'][$adapterName])) {
+            $adapterParams = SBMAILER['params'][$adapterName];
+        }
+        return self::includeAndCreateByName($adapterName, $adapterParams, $enableExcetions);
     }
     /**
      * Creates a instance of SBMailer by Adapter Name
+     * The adapter must be previously loaded
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
     public static function createByName ($adapterName, $adapterParams, $enableExcetions = false) {
-        if (!SBMailerUtils::existsAdapter($adapterName)) {
-            @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
-        }
         $adapterConfiguration = SBMailerUtils::getAdapter($adapterName);
         if (!$adapterConfiguration) {
             throw new \Exception("SBMailer Adapter $adapterName not found!");
@@ -101,6 +99,18 @@ class SBMailer {
         $mailAdapter = $mailAdapterClass->newInstanceArgs( array ( $adapterParams ) );
         $mailer = new SBMailer( $mailAdapter, $enableExcetions );
         return $mailer;
+    }
+    /**
+     * Creates a instance of SBMailer by Adapter Name
+     * Include the adapter file if needed
+     * 
+     * @throws \Exception if SBMailer Adapter not found
+     */
+    public static function includeAndCreateByName ($adapterName, $adapterParams, $enableExcetions = false) {
+        if (!SBMailerUtils::existsAdapter($adapterName)) {
+            @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
+        }
+        return self::createByName($adapterName, $adapterParams);
     }
     public function getMailerName () {
         return $this->mailAdapter->getMailerName();
@@ -173,7 +183,7 @@ class SBMailer {
         $this->Body = $body;
     }
     public function setAltBody($altBody) {
-        $this->mailAdapter->setAltBody($altBody);
+        $this->AltBody = $altBody;
     }
     public function setTag($tagName) {
         $this->mailAdapter->setTag($tagName);
@@ -196,7 +206,7 @@ class SBMailer {
             }
         }
     }
-    public function send () {        
+    public function send () {
         $this->handleCompatibility();
         try {
             $this->mailAdapter->send();

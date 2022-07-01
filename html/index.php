@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       return false;
   }
 
-   // Defining true would enable Exceptions
+   // Defining true enable Exceptions
    // $mailer = SBMailer::createDefault(true);
 
    // Set the From fields of email
@@ -80,17 +80,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $mailer->addReplyTo($replyTo, $replyToName);
    }
 
+   // $mailer->addReplyTo("another@email.com", "Name");
+
    // Add recipients
    $to = getInput("to");
    $toName = getInput("toName");
    $mailer->addAddress ($to, $toName);
    
+   // $mailer->addAddress("another@email.com", "Name");
+
    // CC
    $cc = getInput("cc");
    $ccName = getInput("ccName");
    if (!empty($cc)) {
       $mailer->addCC($cc, $ccName);
    }
+
+   // $mailer->addCC("another@email.com", "Name");
    
    // BCC
    $bcc = getInput("bcc");
@@ -98,6 +104,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    if (!empty($bcc)) {
       $mailer->addBcc($bcc, $bccName);
    }
+
+   // $mailer->addBcc("another@email.com", "Name");
 
    // Add attachments
    if (isset($_FILES['attach']) && $_FILES['attach']['name']) {
@@ -118,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    }
 
    // Another attachment?
-   // $success = $mailer->addAttachment( __DIR__ . "/attachment.pdf");
+   // $success = $mailer->addAttachment( __DIR__ . "/attachment.zip");
    // if (!$success) {
    //    $result[] = "Attachment not included! Details: " . $mailer->getErrorInfo();
    // }
@@ -132,10 +140,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    //$mailer->isHTML(false); // We use HTML by default. Use it if you need text/plain
    $body = getInput("body", true);
    $mailer->setBody($body);
-   //$mailer->Body = getInput("body", true); // PHPMailer compatibility
+   //$mailer->Body = $body; // PHPMailer compatibility
 
-   //$mailer->setAltBody("Alternative Body when reader does not support HTML");
-   //$mailer->AltBody = "Alternative Body when reader does not support HTML"; // PHPMailer compatibility
+   $textBody = getInput("textBody");
+   $mailer->setAltBody($textBody);
+   //$mailer->AltBody = $textBody; // PHPMailer compatibility
 
    // Adds a test category
    $mailer->setTag("tests");
@@ -227,6 +236,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          <tr>
             <td class="header">Html Body:</td>
             <td colspan="2"><textarea rows="5" name="body"><?php echo $body; ?></textarea></td>
+         </tr>
+         <tr>
+            <td class="header">Text Body:</td>
+            <td colspan="2"><textarea rows="5" name="textBody"><?php echo $textBody; ?></textarea></td>
          </tr>
          <tr>
             <td class="header">Attachment:</td>
