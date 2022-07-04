@@ -6,7 +6,10 @@ class SBSendgridAdapter implements iSBMailerAdapter {
 
     private $apiKey;
     private $email;
-    
+
+    private $htmlBody;
+    private $textBody;
+
     /**
      * Create a sendgrid Adapter
      *
@@ -56,15 +59,21 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         $this->email->setSubject( $subject );
     }
     public function setHtmlBody($body) {
-        $this->email->addContent(SBMailerUtils::CONTENT_TYPE_TEXT_HTML, $body);
+        $this->htmlBody = $body;
     }
     public function setTextBody($body) {
-        $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $body);
+        $this->textBody = $body;
     }
     public function setTag($tagName) {
         $this->email->addCategory($tagName);
     }
     public function send () {
+        if (!empty($this->htmlBody)) {
+            $this->email->addContent(SBMailerUtils::CONTENT_TYPE_TEXT_HTML, $this->htmlBody);
+        } else if (!empty($this->textBody)) {
+            $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $this->textBody);
+        }
+
         $sendgrid = new \SendGrid($this->apiKey);
         $response = $sendgrid->send($this->email);
 

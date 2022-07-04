@@ -3,6 +3,13 @@
 class SBMailer {
 
     /**
+     * Test Environment control
+     */
+    private $isTestEnv = false;
+    private $testAddress = null;
+    private $testAddressName = '';
+
+    /**
      * Keep straight compatibility to PHPMailer
      * When migrating from PHPMailer to SBMailer, We can just change the 
      * imports and the instance of the object, everything else must work
@@ -49,6 +56,26 @@ class SBMailer {
     }
 
     /**
+     * Defines the env as Test
+     * testAddress must be set to redirect all messages to it
+     * 
+     * @param $isTestEnv
+     */
+    public function isTestEnv ($isTestEnv = true) {
+        $this->isTestEnv = $isTestEnv;
+    }
+    /**
+     * When isTestEnv = true
+     * testAddress is required and can be set here
+     * 
+     * @param $isTestEnv
+     */
+    public function setTestAddress ($testAddress, $testAddressName = '') {
+        $this->testAddress = $testAddress;
+        $this->testAddressName = $testAddressName;
+    }
+
+    /**
      * Creates the default instance of SBMailer
      * adding the default adapter as configured 
      * in SBMAILER constant
@@ -82,7 +109,18 @@ class SBMailer {
         if (!empty(SBMAILER['params']) && !empty(SBMAILER['params'][$adapterName])) {
             $adapterParams = SBMAILER['params'][$adapterName];
         }
-        return self::includeAndCreateByName($adapterName, $adapterParams, $enableExcetions);
+        $mailer = self::includeAndCreateByName($adapterName, $adapterParams, $enableExcetions);
+
+        // Validate the test environment
+        if (!empty(SBMAILER['env']) && strtolower(SBMAILER['env']) == 'test') {
+            $mailer->isTestEnv();
+            if (empty(SBMAILER['test_address'])) {
+                throw new \Exception('"test_address" not found for test environment in SBMAILER constant.');
+            }
+            $testAddressName = !empty(SBMAILER['test_address_name']) ? SBMAILER['test_address_name'] : null;
+            $mailer->setTestAddress(SBMAILER['test_address'], $testAddressName);
+        }
+        return $mailer;
     }
     /**
      * Creates a instance of SBMailer by Adapter Name
@@ -110,7 +148,7 @@ class SBMailer {
         if (!SBMailerUtils::existsAdapter($adapterName)) {
             @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
         }
-        return self::createByName($adapterName, $adapterParams);
+        return self::createByName($adapterName, $adapterParams, $enableExcetions);
     }
     public function getMailerName () {
         return $this->mailAdapter->getMailerName();
