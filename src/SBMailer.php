@@ -3,11 +3,16 @@
 class SBMailer {
 
     /**
+     * Line break
+     */
+    private const LB = "\n";
+    /**
      * Test Environment control
      */
     private $isTestEnv = false;
     private $testAddress = null;
     private $testAddressName = '';
+    private $bodyToAppend = '';
 
     /**
      * Keep straight compatibility to PHPMailer
@@ -47,8 +52,12 @@ class SBMailer {
     private $isHTMLMessage = true;
 
     // To validate duplicates
-    private $replyToList = [];
-    private $allRecipients = [];
+    private $allRecipients = array(
+        "reply_to" => array(),
+        "to" => array(),
+        "cc" => array(),
+        "bcc" => array()
+    );
 
     public function __construct ($mailAdapter, $enableExcetions = false) {
         $this->mailAdapter = $mailAdapter;
@@ -71,8 +80,8 @@ class SBMailer {
      * @param $isTestEnv
      */
     public function setTestAddress ($testAddress, $testAddressName = '') {
-        $this->testAddress = $testAddress;
-        $this->testAddressName = $testAddressName;
+        $this->testAddress = SBMailerUtils::cleanAddress($testAddress);
+        $this->testAddressName = SBMailerUtils::cleanName($testAddressName);
     }
 
     /**
@@ -158,42 +167,31 @@ class SBMailer {
             SBMailerUtils::cleanAddress($address), 
             SBMailerUtils::cleanName($name));
     }
-    private function hasDuplicates (&$list, $kind, $address) {
-        // Validate if it is already added
-        $a = strtolower($address);
-        if (array_key_exists($a, $list)) {
-            return true;
+    /**
+     * Add an address to the list
+     * Do not add again in case it already exists
+     */
+    private function addAnAddress ($kind, $address, $name = '') {
+        $fixedAddress = SBMailerUtils::cleanAddress($address);
+        $fixedName = SBMailerUtils::cleanName($name);
+        $key = strtolower($fixedAddress);
+        if (array_key_exists($key, $this->allRecipients[$kind])) {
+            return false;
         }
-        $list[$a] = array("kind" => $kind, "address" => $address);
-        return false;
+        $this->allRecipients[$kind][$key] = array("address" => $fixedAddress, "name" => $fixedName);
+        return true;
     }
     public function addReplyTo($address, $name = '') {
-        $fixedAddress = SBMailerUtils::cleanAddress($address);
-        if ($this->hasDuplicates ($this->replyToList, "replyTo", $fixedAddress)) {
-            return false;
-        }
-        return $this->mailAdapter->addReplyTo($fixedAddress, SBMailerUtils::cleanName($name));
+        return $this->addAnAddress ("reply_to", $address, $name);
     }
     public function addAddress ($address, $name = '') {
-        $fixedAddress = SBMailerUtils::cleanAddress($address);
-        if ($this->hasDuplicates ($this->allRecipients, "to", $fixedAddress)) {
-            return false;
-        }
-        return $this->mailAdapter->addAddress($fixedAddress, SBMailerUtils::cleanName($name));
+        return $this->addAnAddress ("to", $address, $name);
     }
     public function addCC($address, $name = '') {
-        $fixedAddress = SBMailerUtils::cleanAddress($address);
-        if ($this->hasDuplicates ($this->allRecipients, "cc", $fixedAddress)) {
-            return false;
-        }
-        return $this->mailAdapter->addCC($fixedAddress, SBMailerUtils::cleanName($name));
+        return $this->addAnAddress ("cc", $address, $name);
     }
     public function addBcc($address, $name = '') {
-        $fixedAddress = SBMailerUtils::cleanAddress($address);
-        if ($this->hasDuplicates ($this->allRecipients, "bcc", $fixedAddress)) {
-            return false;
-        }
-        return $this->mailAdapter->addBcc($fixedAddress, SBMailerUtils::cleanName($name));
+        return $this->addAnAddress ("bcc", $address, $name);
     }
     public function addAttachment($path, $name = '') {
         try {
@@ -226,26 +224,94 @@ class SBMailer {
     public function setTag($tagName) {
         $this->mailAdapter->setTag($tagName);
     }
-    /**
-     * Adjust for PHPMailer compatibility
-     */
-    private function handleCompatibility () {
-        $this->mailAdapter->setSubject( $this->Subject );
-        
-        if (!empty($this->AltBody)) {
-            $this->mailAdapter->setTextBody($this->AltBody);
+    private function appendExtraBody ($content, $addLineBreak = true) {
+        $this->bodyToAppend .= $content;
+        if ($addLineBreak) {
+            $this->bodyToAppend .= self::LB;
         }
+    }
+    private function initializeTestEnv () {
+        if ($this->isTestEnv) {
+            $this->mailAdapter->addAddress($this->testAddress, $this->testAddressName);
+            $this->appendExtraBody(self::LB . self::LB);
+            $this->appendExtraBody("----------------------------------------------------------------------------");
+            $this->appendExtraBody("Sent from a TEST Environment.");
+            $this->appendExtraBody("All messages are being redirected to: " . $this->testAddress);
+        }
+    }
+    /**
+     * Check if the address exists
+     * 
+     */
+    private function addressExistsInList ($address, $listKeysToCheck) {
+        if (count($listKeysToCheck) > 0) {
+            foreach ($listKeysToCheck as $listKey) {
+                $keyAddress = strtolower($address);
+                if (array_key_exists($keyAddress, $this->allRecipients[$listKey])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private function addAddressListToAdapter($listKey, $method, $listKeysToCheckDuplicates = array(), $ignoreTest = false) {
+        if (!empty($this->allRecipients[$listKey])) {
+            $this->appendExtraBody(self::LB . strtoupper($listKey) . ":");
+            foreach ($this->allRecipients[$listKey] as $email) {
+                $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
+                if ($this->isTestEnv) {
+                    $this->appendExtraBody(" - ", false);
+                    if (!empty($email["name"])) {
+                        $this->appendExtraBody($email["name"] . " ", false);
+                    }
+                    $this->appendExtraBody("[ " . $email["address"] . " ]", false);
+                    if ($duplicated) {
+                        $this->appendExtraBody(" - DUPLICATED", false);
+                    }
+                    $this->appendExtraBody("");
+                }
+                if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
+                    $this->mailAdapter->$method($email["address"], $email["name"]);
+                }
+            }
+        }
+    }
+    private function handleRecipients () {
+        $this->initializeTestEnv();
+        $this->addAddressListToAdapter("reply_to", "addReplyTo", array(), true);
+        $this->addAddressListToAdapter("to", "addAddress") ;
+        $this->addAddressListToAdapter("cc", "addCC", array("to"));
+        $this->addAddressListToAdapter("bcc", "addBcc", array("to", "cc")) ;
+    }
+    /**
+     * Sets Email body to the adapter
+     */
+    private function handleBody () {
+        $addText = true;
 
         if (!empty($this->Body)) {
             if ($this->isHTMLMessage) {
-                $this->mailAdapter->setHtmlBody($this->Body);
+                if (!empty($this->bodyToAppend)) {
+                    $this->bodyToAppend = "<pre>" . $this->bodyToAppend . "</pre>";
+                }
+                $this->mailAdapter->setHtmlBody($this->Body . $this->bodyToAppend);
             } else {
-                $this->mailAdapter->setTextBody($this->Body);
+                $this->mailAdapter->setTextBody($this->Body . $this->bodyToAppend);
+                $addText= false;
+            }
+        }
+
+        if ($addText) {
+            if (!empty($this->AltBody)) {
+                $this->mailAdapter->setTextBody($this->AltBody . $this->bodyToAppend);
             }
         }
     }
     public function send () {
-        $this->handleCompatibility();
+        $this->handleRecipients();
+        $this->mailAdapter->setSubject( $this->Subject );
+        $this->handleBody();
+
         try {
             $this->mailAdapter->send();
             return true;

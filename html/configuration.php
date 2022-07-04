@@ -1,8 +1,5 @@
 <?php
 
-// DB_SYSTEM = 'prod' or 'test'
-define('DB_SYSTEM', getenv('ENV'));
-
 define('SBMAILER', array(
     'default' => 'sendgrid',
     'params'  => array (
@@ -23,7 +20,7 @@ define('SBMAILER', array(
             'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
         ),
     ),
-    'env' => DB_SYSTEM,
+    'env' => getenv('ENV'), // 'prod' or 'test'
     'test_address' => getenv('TEST_ADDRESS'),
     'test_address_name' => getenv('TEST_ADDRESS_NAME'),
 ));
