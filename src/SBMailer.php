@@ -230,6 +230,19 @@ class SBMailer {
             $this->bodyToAppend .= self::LB;
         }
     }
+    private function appendAddressesToExtraBody ($address, $name, $duplicated) {
+        if ($this->isTestEnv) {
+            $this->appendExtraBody(" - ", false);
+            if (!empty($name)) {
+                $this->appendExtraBody($name . " ", false);
+            }
+            $this->appendExtraBody("[ " . $address . " ]", false);
+            if ($duplicated) {
+                $this->appendExtraBody(" - DUPLICATED", false);
+            }
+            $this->appendExtraBody("");
+        }
+    }
     private function initializeTestEnv () {
         if ($this->isTestEnv) {
             $this->mailAdapter->addAddress($this->testAddress, $this->testAddressName);
@@ -242,6 +255,10 @@ class SBMailer {
     /**
      * Check if the address exists
      * 
+     * @param string $address Address to check
+     * @param array $listKeysToCheck keys of recipient list to check
+     * 
+     * @return bool if the address exists in some list
      */
     private function addressExistsInList ($address, $listKeysToCheck) {
         if (count($listKeysToCheck) > 0) {
@@ -256,23 +273,15 @@ class SBMailer {
     }
     private function addAddressListToAdapter($listKey, $method, $listKeysToCheckDuplicates = array(), $ignoreTest = false) {
         if (!empty($this->allRecipients[$listKey])) {
-            $this->appendExtraBody(self::LB . strtoupper($listKey) . ":");
+            if ($this->isTestEnv) $this->appendExtraBody(self::LB . strtoupper($listKey) . ":");
             foreach ($this->allRecipients[$listKey] as $email) {
                 $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
-                if ($this->isTestEnv) {
-                    $this->appendExtraBody(" - ", false);
-                    if (!empty($email["name"])) {
-                        $this->appendExtraBody($email["name"] . " ", false);
-                    }
-                    $this->appendExtraBody("[ " . $email["address"] . " ]", false);
-                    if ($duplicated) {
-                        $this->appendExtraBody(" - DUPLICATED", false);
-                    }
-                    $this->appendExtraBody("");
-                }
+                
                 if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
                     $this->mailAdapter->$method($email["address"], $email["name"]);
                 }
+
+                $this->appendAddressesToExtraBody ($email["address"], $email["name"], $duplicated);
             }
         }
     }

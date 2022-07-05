@@ -70,7 +70,8 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     public function send () {
         if (!empty($this->htmlBody)) {
             $this->email->addContent(SBMailerUtils::CONTENT_TYPE_TEXT_HTML, $this->htmlBody);
-        } else if (!empty($this->textBody)) {
+        }
+        if (!empty($this->textBody)) {
             $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $this->textBody);
         }
 

@@ -1,6 +1,6 @@
 <?php
 
-define('SBMAILER', array(
+define('SBMAILER', array (
     'default' => 'sendgrid',
     'params'  => array (
         'postmark' => array (
