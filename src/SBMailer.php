@@ -251,17 +251,18 @@ class SBMailer {
         if ($this->isTestEnv) {
             $this->mailAdapter->addAddress($this->testAddress, $this->testAddressName);
             $this->appendExtraBody(self::LB . self::LB);
+            
             $this->appendExtraBody("----------------------------------------------------------------------------");
-
             $tag = empty($this->tag) ? "" : " TAG: " . $this->tag;
             $this->appendExtraBody("Sent from a TEST Environment." . $tag);
-            
+            $this->appendExtraBody("----------------------------------------------------------------------------");
+
             $testEmail = $this->testAddress;
             if (!empty($this->testAddressName)) {
                 $testEmail = $this->testAddressName . "( " . $this->testAddress . " )";
             }
             $this->appendExtraBody("All messages are being redirected to: " . $testEmail);
-            $this->appendExtraBody("Below are the recipients who should have received the message:");
+            $this->appendExtraBody("Below are the recipients who would receive this message:");
         }
     }
     /**

@@ -13,7 +13,7 @@ To configure a default adapter, you can define a constant named SBMAILER and set
 
 Send emails using the PHPMailer library. This particular adapter allow you to not inform params, so PHPMailer will use php mail() function to send emails.
 
-Send Using mail() function
+### Send Using mail() function
 
 ```php
 define('SBMAILER', array(
@@ -21,7 +21,7 @@ define('SBMAILER', array(
 ));
 ```
 
-Send Using SMTP
+### Send Using SMTP
 
 ```php
 define('SBMAILER', array(
@@ -68,10 +68,46 @@ define('SBMAILER', array(
 ));
 ```
 
+# Test environment
+
+The library allow you to set the environment as test. That means that you can define a default email address where the emails will be redirected when in test environment.
+
+Below is an example of an entire configuration, with multiple email providers and defining postmark as the default email. Also, defining the environment as test, with a default email and name where all the test emails will be delivered.
+
+```php
+define('SBMAILER', array (
+    'default' => 'postmark',
+    'params'  => array (
+        'postmark' => array (
+            'api_key' => getenv('POSTMARK_API_KEY')
+        ),
+        'sendgrid' => array (
+            'api_key' => getenv('SENDGRID_API_KEY')
+        ),
+        'mailersend' => array (
+            'api_key' => getenv('MAILERSEND_API_KEY')
+        ),
+        // 'phpmailer' => array (), // Using mail function
+        'phpmailer' => array ( // Using SMTP function
+            'smtp_server'   => getenv('MAIL_SMTP_SERVER'),
+            'smtp_port'     => getenv('MAIL_SMTP_PORT'),
+            'smtp_user'     => getenv('MAIL_SMTP_USER'),
+            'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
+        ),
+    ),
+    'env' => getenv('ENV'), // 'prod' or 'test'
+    'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
+    'test_address_name' => getenv('TEST_ADDRESS_NAME'),
+));
+```
+
+Setting 'env' as 'test' it will be required that you set test_address as well. 
+All messages will be redirected to the test_address and a message with all recipients will be appended to the message body.
+
 
 # How to implement new Adapters
 
-You can implement new providers for email sending, just implementing the interface iSBMailerAdapter giving it a unique name and class name.
+You can implement new adapters just implementing the interface iSBMailerAdapter giving it a unique name and class name. See the existing adapters to a better undertanding.
 
 
 # Setup before run the examples
@@ -80,7 +116,7 @@ Before run the examples, you need to install the dependencies of each adapter yo
 
 This project install the dependencies using composer. Make sure you have composer installed.
 
-To do that, navigate to the directory of the desired adapter and run the command below in terminal
+To do that, navigate to the directory of the desired adapter and run the below command in terminal:
 
 ```
 composer install

@@ -1,7 +1,7 @@
 <?php
 
 define('SBMAILER', array (
-    'default' => 'sendgrid',
+    'default' => getenv('DEFAULT_ADAPTER'),
     'params'  => array (
         'postmark' => array (
             'api_key' => getenv('POSTMARK_API_KEY')
