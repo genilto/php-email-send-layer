@@ -21,6 +21,6 @@ define('SBMAILER', array (
         ),
     ),
     'env' => getenv('ENV'), // 'prod' or 'test'
-    'test_address' => getenv('TEST_ADDRESS'),
+    'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
     'test_address_name' => getenv('TEST_ADDRESS_NAME'),
 ));

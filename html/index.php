@@ -14,8 +14,9 @@ $replyToList = array();
 $toList = array();
 $ccList = array();
 $bccList = array();
+$tag = "";
 $subject = "";
-$isHtml = false;
+$isHtml = true;
 $body = "";
 
 // Creates the default mailer instance as configurations
@@ -138,6 +139,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
    }
 
+   // Set the tag
+   $tag = getInput("tag");
+   if (!empty($tag)) {
+      $mailer->setTag($tag);
+   }
+
    // Set the subject and the email body
    $subject = getInput("subject");
    $mailer->setSubject($subject);
@@ -154,9 +161,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    $textBody = getInput("textBody");
    $mailer->setAltBody($textBody);
    //$mailer->AltBody = $textBody; // PHPMailer compatibility
-
-   // Adds a test category
-   $mailer->setTag("tests");
 
    // Sends the email
    if ($mailer->send ()) {
@@ -258,6 +262,10 @@ function createEmailHtml ($emailList, $fieldId, $fieldName, $fieldDescription) {
          <?php createEmailHtml($toList, "to", "to", "To"); ?>
          <?php createEmailHtml($ccList, "cc", "cc", "CC"); ?>
          <?php createEmailHtml($bccList, "bcc", "bcc", "BCC"); ?>
+         <tr>
+            <td class="header">Tag:</td>
+            <td colspan="2"><input type="text" name="tag" value="<?php echo $tag; ?>"></td>
+         </tr>
          <tr>
             <td class="header">Subject:</td>
             <td colspan="2"><input type="text" name="subject" value="<?php echo $subject; ?>" required></td>

@@ -50,6 +50,7 @@ class SBMailer {
     private $mailAdapter;
     private $enableExcetions;
     private $isHTMLMessage = true;
+    private $tag = '';
 
     // To validate duplicates
     private $allRecipients = array(
@@ -103,6 +104,9 @@ class SBMailer {
      *              'smtp_user'     => getenv('MAIL_SMTP_USER'),
      *              'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
      *          ),
+     *          'env' => getenv('ENV'), // 'prod' or 'test'
+     *          'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
+     *          'test_address_name' => getenv('TEST_ADDRESS_NAME'),
      *      )
      * ));
      * </pre>
@@ -221,8 +225,8 @@ class SBMailer {
     public function setAltBody($altBody) {
         $this->AltBody = $altBody;
     }
-    public function setTag($tagName) {
-        $this->mailAdapter->setTag($tagName);
+    public function setTag($tag) {
+        $this->tag = SBMailerUtils::cleanName($tag);
     }
     private function appendExtraBody ($content, $addLineBreak = true) {
         $this->bodyToAppend .= $content;
@@ -248,8 +252,16 @@ class SBMailer {
             $this->mailAdapter->addAddress($this->testAddress, $this->testAddressName);
             $this->appendExtraBody(self::LB . self::LB);
             $this->appendExtraBody("----------------------------------------------------------------------------");
-            $this->appendExtraBody("Sent from a TEST Environment.");
-            $this->appendExtraBody("All messages are being redirected to: " . $this->testAddress);
+
+            $tag = empty($this->tag) ? "" : " TAG: " . $this->tag;
+            $this->appendExtraBody("Sent from a TEST Environment." . $tag);
+            
+            $testEmail = $this->testAddress;
+            if (!empty($this->testAddressName)) {
+                $testEmail = $this->testAddressName . "( " . $this->testAddress . " )";
+            }
+            $this->appendExtraBody("All messages are being redirected to: " . $testEmail);
+            $this->appendExtraBody("Below are the recipients who should have received the message:");
         }
     }
     /**
@@ -320,6 +332,10 @@ class SBMailer {
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
         $this->handleBody();
+
+        if (!empty($this->tag)) {
+            $this->mailAdapter->setTag($this->tag);
+        }
 
         try {
             $this->mailAdapter->send();
