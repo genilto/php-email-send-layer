@@ -2,6 +2,7 @@
 
 // Load SBMailer Class
 require_once ( __DIR__ . '/../SBMailer.php' );
+//require_once ( __DIR__ . '/../dist/sbmailer/SBMailer.php' );
 
 // Import the configurations
 require_once ( __DIR__ . '/configuration.php' );
