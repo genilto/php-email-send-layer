@@ -36,8 +36,8 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
             'Tag' => NULL,
             'Metadata' =>  NULL, // array
             'Headers' => NULL, // array
-            'TrackOpens' => false,
-            "TrackLinks" => "None",
+            'TrackOpens' => NULL,
+            "TrackLinks" => NULL,
             'MessageStream' => NULL
         );
     }

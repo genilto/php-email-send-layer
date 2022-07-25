@@ -8,6 +8,10 @@ services:
     ports:
       - 85:80
     environment:
+      - ENV=${ENV}
+      - TEST_ADDRESS=${TEST_ADDRESS}
+      - TEST_ADDRESS_NAME=${TEST_ADDRESS_NAME}
+      - DEFAULT_ADAPTER=${DEFAULT_ADAPTER}
       - MAIL_SMTP_SERVER=${MAIL_SMTP_SERVER}
       - MAIL_SMTP_PORT=${MAIL_SMTP_PORT}
       - MAIL_SMTP_USER=${MAIL_SMTP_USER}

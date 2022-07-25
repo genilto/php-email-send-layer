@@ -1,8 +1,8 @@
 <?php
 
-define('SBMAILER', array(
-    'default' => 'postmark',
-    'params' => array (
+define('SBMAILER', array (
+    'default' => getenv('DEFAULT_ADAPTER'),
+    'params'  => array (
         'postmark' => array (
             'api_key' => getenv('POSTMARK_API_KEY')
         ),
@@ -19,5 +19,8 @@ define('SBMAILER', array(
             'smtp_user'     => getenv('MAIL_SMTP_USER'),
             'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
         ),
-    )
+    ),
+    'env' => getenv('ENV'), // 'prod' or 'test'
+    'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
+    'test_address_name' => getenv('TEST_ADDRESS_NAME'),
 ));

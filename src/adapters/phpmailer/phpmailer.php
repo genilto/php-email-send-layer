@@ -17,7 +17,7 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
      */
     public function __construct ($params) {
         $this->mailer = new PHPMailer(true); // Enable Exceptions
-        $this->mailer->isHTML(true); // Defaults to HTML Body
+        $this->mailer->isHTML(false);
 
         // Server settings
         // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;                        //Enable verbose debug output
