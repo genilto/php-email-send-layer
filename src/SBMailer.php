@@ -48,7 +48,6 @@ class SBMailer {
     public $AltBody = '';
 
     private $mailAdapter;
-    private $enableExcetions;
     private $isHTMLMessage = true;
     private $tag = '';
 
@@ -60,9 +59,8 @@ class SBMailer {
         "bcc" => array()
     );
 
-    public function __construct ($mailAdapter, $enableExcetions = false) {
+    public function __construct ($mailAdapter) {
         $this->mailAdapter = $mailAdapter;
-        $this->enableExcetions = $enableExcetions;
     }
 
     /**
@@ -104,6 +102,7 @@ class SBMailer {
      *              'smtp_user'     => getenv('MAIL_SMTP_USER'),
      *              'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
      *          ),
+     *          'debug_level' => 1, // 0 - Off | 1 - Error only | 2 - Full
      *          'env' => getenv('ENV'), // 'prod' or 'test'
      *          'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
      *          'test_address_name' => getenv('TEST_ADDRESS_NAME'),
@@ -113,7 +112,7 @@ class SBMailer {
      * 
      * @throws \Exception if SBMAILER contant or configurations not defined
      */
-    public static function createDefault ($enableExcetions = false) {
+    public static function createDefault () {
         if (!defined('SBMAILER') || empty(SBMAILER['default'])) {
             throw new \Exception('Default configurations for SBMailer not defined in SBMAILER constant.');
         }
@@ -122,7 +121,7 @@ class SBMailer {
         if (!empty(SBMAILER['params']) && !empty(SBMAILER['params'][$adapterName])) {
             $adapterParams = SBMAILER['params'][$adapterName];
         }
-        $mailer = self::includeAndCreateByName($adapterName, $adapterParams, $enableExcetions);
+        $mailer = self::includeAndCreateByName($adapterName, $adapterParams);
 
         // Validate the test environment
         if (!empty(SBMAILER['env']) && strtolower(SBMAILER['env']) == 'test') {
@@ -141,14 +140,14 @@ class SBMailer {
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
-    public static function createByName ($adapterName, $adapterParams, $enableExcetions = false) {
+    public static function createByName ($adapterName, $adapterParams) {
         $adapterConfiguration = SBMailerUtils::getAdapter($adapterName);
         if (!$adapterConfiguration) {
             throw new \Exception("SBMailer Adapter $adapterName not found!");
         }
         $mailAdapterClass = new ReflectionClass($adapterConfiguration['className']);
         $mailAdapter = $mailAdapterClass->newInstanceArgs( array ( $adapterParams ) );
-        $mailer = new SBMailer( $mailAdapter, $enableExcetions );
+        $mailer = new SBMailer( $mailAdapter );
         return $mailer;
     }
     /**
@@ -157,11 +156,11 @@ class SBMailer {
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
-    public static function includeAndCreateByName ($adapterName, $adapterParams, $enableExcetions = false) {
+    public static function includeAndCreateByName ($adapterName, $adapterParams) {
         if (!SBMailerUtils::existsAdapter($adapterName)) {
             @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
         }
-        return self::createByName($adapterName, $adapterParams, $enableExcetions);
+        return self::createByName($adapterName, $adapterParams);
     }
     public function getMailerName () {
         return $this->mailAdapter->getMailerName();
@@ -329,6 +328,9 @@ class SBMailer {
             }
         }
     }
+    private function logError ($errorMessage) {
+        
+    }
     public function send () {
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
@@ -346,9 +348,9 @@ class SBMailer {
             if (empty($this->ErrorInfo)) {
                 $this->ErrorInfo = "Email was not sent! No details found!";
             }
-            if ($this->enableExcetions) {
-                throw new \Exception( $this->ErrorInfo );
-            }
+
+            // Exception logging
+            $this->logError( $this->ErrorInfo );
         }
         return false;
     }

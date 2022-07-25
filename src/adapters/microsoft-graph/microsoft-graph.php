@@ -13,7 +13,7 @@ use Microsoft\Graph\Model\Recipient;
 
 class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
 
-    private $graph;
+    private $authParams;
     private $email;
 
     /**
@@ -21,9 +21,8 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
      *
      * @param string $accessToken
      */
-    public function __construct ($accessToken) {
-        $this->graph = new Graph();
-        $this->graph->setAccessToken($accessToken);
+    public function __construct ($authParams) {
+        $this->authParams = $authParams;
         $this->email = new Message();
     }
     public function getMailerName () {
@@ -48,13 +47,13 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         return true;
     }
     public function addAddress ($address, $name = '') {
-        return $this->addAnAddress('toRecipients', $address, $name);
+        $this->email->setToRecipients([ $this->createRecipient($address, $name) ]);
     }
     public function addCC($address, $name = '') {
-        return $this->addAnAddress('ccRecipients', $address, $name);
+        return $this->email->setCcRecipients([ $this->createRecipient($address, $name) ]);
     }
     public function addBcc($address, $name = '') {
-        return $this->addAnAddress('bccRecipients', $address, $name);
+        return $this->email->setBccRecipients([ $this->createRecipient($address, $name) ]);
     }
     public function addAttachment($path, $name = '') {
         $contents = SBMailerUtils::getFileContents($path);
@@ -80,7 +79,7 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         return true;
     }
     public function setSubject($subject) {
-        $this->email['subject'] = $subject;
+        $this->email->setSubject( $subject );
     }
     private function setBody ( $bodyType, $body ) {
         $itemBody = new ItemBody();
@@ -112,9 +111,34 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
             "Message" => $this->email,
             "saveToSentItems" => true
         );
-        $this->graph->createRequest("POST", "/me/sendMail")
+
+        $accessToken = $this->getAuthToken ();
+
+        echo "TOKEN: " . $accessToken;
+
+        $graph = new Graph();
+        $graph->setAccessToken($accessToken);
+
+        $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress() . "/sendMail")
                     ->attachBody($mailBody)
                     ->execute();
         return true;
     }
+
+    private function getAuthToken () {
+        $guzzle = new \GuzzleHttp\Client();
+        $url = 'https://login.microsoftonline.com/' . $this->authParams["tenant_id"] . '/oauth2/v2.0/token';
+        $token = json_decode($guzzle->post($url, [
+            'form_params' => [
+                'client_id' => $this->authParams["client_id"],
+                'client_secret' => $this->authParams["client_secret"],
+                'scope' => 'https://graph.microsoft.com/.default',
+                'grant_type' => 'client_credentials',
+            ],
+        ])->getBody()->getContents());
+        return $token->access_token;
+    }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('microsoft-graph', 'SBMicrosoftGraphAdapter');

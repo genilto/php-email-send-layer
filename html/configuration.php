@@ -19,6 +19,11 @@ define('SBMAILER', array (
             'smtp_user'     => getenv('MAIL_SMTP_USER'),
             'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
         ),
+        'microsoft-graph' => array (
+            'tenant_id' => getenv('MS_GRAPH_TENTANT_ID'),
+            'client_id' => getenv('MS_GRAPH_CLIENT_ID'),
+            'client_secret' => getenv('MS_GRAPH_CLIENT_SECRET')
+        ),
     ),
     'env' => getenv('ENV'), // 'prod' or 'test'
     'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
