@@ -155,3 +155,6 @@ class SBSendinblueAdapter implements iSBMailerAdapter {
         // }
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('sendinblue', 'SBSendinblueAdapter');
