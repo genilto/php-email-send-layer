@@ -1,5 +1,7 @@
 <?php
 
+require_once ( __DIR__ . "/vendor/autoload.php");
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -11,23 +13,26 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     /**
      * Create a PHPMailer Adapter
      *
-     * @param string $apiKey
+     * @param string $params
      */
-    public function __construct ($smtpServer = '', $smtpPort = '', $smtpUser = '', $smtpPassword = '') {
+    public function __construct ($params) {
         $this->mailer = new PHPMailer(true); // Enable Exceptions
-        $this->mailer->isHTML(true); // Defaults to HTML Body
+        $this->mailer->isHTML(false);
 
         // Server settings
         // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;                        //Enable verbose debug output
-        if (!empty($smtpServer)) {
+        if (!empty($params['smtp_server'])) {
             $this->mailer->isSMTP();                                    //Send using SMTP
-            $this->mailer->Host       = $smtpServer;                    //Set the SMTP server to send through
+            $this->mailer->Host       = $params['smtp_server'];         //Set the SMTP server to send through
             $this->mailer->SMTPAuth   = true;                           //Enable SMTP authentication
-            $this->mailer->Username   = $smtpUser;                      //SMTP username
-            $this->mailer->Password   = $smtpPassword;                  //SMTP password
+            $this->mailer->Username   = $params['smtp_user'];           //SMTP username
+            $this->mailer->Password   = $params['smtp_password'];       //SMTP password
             $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; //Enable implicit TLS encryption
-            $this->mailer->Port       = $smtpPort;                      //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+            $this->mailer->Port       = $params['smtp_port'];           //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
         }
+    }
+    public function getMailerName () {
+        return 'PHPMailer (' . $this->mailer->Mailer . ')';
     }
     public function setFrom($address, $name = '') {
         $this->mailer->setFrom($address, $name);
@@ -50,15 +55,14 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->mailer->Subject = $subject;
     }
-    public function isHTML($isHtml = true) {
-        $this->mailer->isHTML($isHtml);
-    }
-    public function setBody($body) {
+    public function setHtmlBody($body) {
+        $this->mailer->isHTML(true);
         $this->mailer->Body = $body;
     }
-    public function setAltBody($altBody) {
-        $this->mailer->AltBody = $altBody;
+    public function setTextBody($body) {
+        $this->mailer->AltBody = $body;
     }
+    public function setTag($tagName) {}
     public function send () {
         try {
             return $this->mailer->send();
@@ -67,3 +71,6 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
         }
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('phpmailer', 'SBPHPMailerAdapter');

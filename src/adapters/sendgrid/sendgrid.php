@@ -1,19 +1,26 @@
 <?php
 
+require_once ( __DIR__ . "/vendor/autoload.php");
+
 class SBSendgridAdapter implements iSBMailerAdapter {
 
     private $apiKey;
     private $email;
-    private $contentType = SBMailerUtils::CONTENT_TYPE_TEXT_HTML;
-    
+
+    private $htmlBody;
+    private $textBody;
+
     /**
      * Create a sendgrid Adapter
      *
-     * @param string $apiKey
+     * @param string $params
      */
-    public function __construct ($apiKey) {
-        $this->apiKey = $apiKey;
+    public function __construct ($params) {
+        $this->apiKey = $params['api_key'];
         $this->email = new \SendGrid\Mail\Mail();
+    }
+    public function getMailerName () {
+        return 'SendGrid';
     }
     public function setFrom($address, $name = '') {
         $this->email->setFrom($address, $name);
@@ -51,20 +58,23 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     public function setSubject($subject) {
         $this->email->setSubject( $subject );
     }
-    public function isHTML($isHtml = true) {
-        if ($isHtml) {
-            $this->contentType = SBMailerUtils::CONTENT_TYPE_TEXT_HTML;
-        } else {
-            $this->contentType = SBMailerUtils::CONTENT_TYPE_PLAINTEXT;
-        }
+    public function setHtmlBody($body) {
+        $this->htmlBody = $body;
     }
-    public function setBody($body) {
-        $this->email->addContent($this->contentType, $body);
+    public function setTextBody($body) {
+        $this->textBody = $body;
     }
-    public function setAltBody($altBody) {
-        $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $altBody);
+    public function setTag($tagName) {
+        $this->email->addCategory($tagName);
     }
     public function send () {
+        if (!empty($this->htmlBody)) {
+            $this->email->addContent(SBMailerUtils::CONTENT_TYPE_TEXT_HTML, $this->htmlBody);
+        }
+        if (!empty($this->textBody)) {
+            $this->email->addContent(SBMailerUtils::CONTENT_TYPE_PLAINTEXT, $this->textBody);
+        }
+
         $sendgrid = new \SendGrid($this->apiKey);
         $response = $sendgrid->send($this->email);
 
@@ -90,3 +100,6 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         return true;
     }
 }
+
+// Register the new adapter
+SBMailerUtils::registerAdapter('sendgrid', 'SBSendgridAdapter');

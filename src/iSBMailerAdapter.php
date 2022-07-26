@@ -3,6 +3,12 @@
 interface iSBMailerAdapter
 {
     /**
+     * Gets the instantiated mailer name
+     * @return string
+     */
+    public function getMailerName ();
+
+    /**
      * Sets the from field of the email
      *
      * @param string $address
@@ -70,26 +76,27 @@ interface iSBMailerAdapter
     public function setSubject($subject);
 
     /**
-     * Sets message type to HTML or plain.
-     *
-     * @param bool $isHtml True for HTML mode
-     */
-    public function isHTML($isHtml = true);
-
-    /**
      * Sets the email body
      *
      * @param string $body of the email
      */
-    public function setBody($body);
+    public function setHtmlBody($body);
 
     /**
      * Sets the email alternative body
      * Displayed when email reader doenst support HTML
      *
-     * @param string $altBody Text body
+     * @param string $body Text body
      */
-    public function setAltBody($altBody);
+    public function setTextBody($body);
+
+    /**
+     * Sets a tag for better classification of
+     * emails
+     *
+     * @param string $tagName
+     */
+    public function setTag($tagName);
 
     /**
      * Sends the email

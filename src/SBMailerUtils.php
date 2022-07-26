@@ -5,6 +5,20 @@ class SBMailerUtils {
     public const CONTENT_TYPE_PLAINTEXT = 'text/plain';
     public const CONTENT_TYPE_TEXT_HTML = 'text/html';
 
+    private static $ADAPTERS = array();
+
+    public static function registerAdapter ($name, $className) {
+        self::$ADAPTERS[$name] = array (
+            'className' => $className
+        );
+    }
+    public static function existsAdapter ($name) {
+        return isset(self::$ADAPTERS[$name]);
+    }
+    public static function getAdapter ($name) {
+        return self::$ADAPTERS[$name];
+    }
+
     /**
      * Multi-byte-safe pathinfo replacement.
      * Drop-in replacement for pathinfo(), but multibyte- and cross-platform-safe.
@@ -242,7 +256,7 @@ class SBMailerUtils {
     public static function cleanName ($name) {
         if ($name !== null) {
             return trim(preg_replace('/[\r\n]+/', '', $name));
-        } 
+        }
         return '';
     }
 
@@ -261,30 +275,5 @@ class SBMailerUtils {
             throw new Exception("File Not found");
         }
         return $contents;
-    }
-
-    /**
-     * Return the error description of the uploaded file
-     * 
-     * @param string $path
-     * 
-     * @return string|false The function returns the error description or false on failure.
-     */
-    public static function getUploadErrorDescription ($uploadErrorCode) {
-        $phpFileUploadErrors = array(
-            //0 => 'There is no error, the file uploaded with success',
-            1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
-            2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
-            3 => 'The uploaded file was only partially uploaded',
-            4 => 'No file was uploaded',
-            6 => 'Missing a temporary folder',
-            7 => 'Failed to write file to disk.',
-            8 => 'A PHP extension stopped the file upload.',
-        );
-
-        if (isset($uploadErrorCode[$phpFileUploadErrors])) {
-            return $uploadErrorCode[$phpFileUploadErrors];
-        }
-        return false;
     }
 }

@@ -8,12 +8,21 @@ services:
     ports:
       - 85:80
     environment:
+      - ENV=${ENV}
+      - TEST_ADDRESS=${TEST_ADDRESS}
+      - TEST_ADDRESS_NAME=${TEST_ADDRESS_NAME}
+      - DEBUG_LEVEL=${DEBUG_LEVEL}
+      - DEFAULT_ADAPTER=${DEFAULT_ADAPTER}
       - MAIL_SMTP_SERVER=${MAIL_SMTP_SERVER}
       - MAIL_SMTP_PORT=${MAIL_SMTP_PORT}
       - MAIL_SMTP_USER=${MAIL_SMTP_USER}
       - MAIL_SMTP_PASSWORD=${MAIL_SMTP_PASSWORD}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - POSTMARK_API_KEY=${POSTMARK_API_KEY}
       - MAILERSEND_API_KEY=${MAILERSEND_API_KEY}
+      - MS_GRAPH_TENTANT_ID=${MS_GRAPH_TENTANT_ID}
+      - MS_GRAPH_CLIENT_ID=${MS_GRAPH_CLIENT_ID}
+      - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
     volumes:
       - ./custom_php.ini:/usr/local/etc/php/conf.d/custom_php.ini
       - .:/var/www
