@@ -22,7 +22,8 @@ define('SBMAILER', array (
         'microsoft-graph' => array (
             'tenant_id' => getenv('MS_GRAPH_TENTANT_ID'),
             'client_id' => getenv('MS_GRAPH_CLIENT_ID'),
-            'client_secret' => getenv('MS_GRAPH_CLIENT_SECRET')
+            'client_secret' => getenv('MS_GRAPH_CLIENT_SECRET'),
+            'save_to_sent_items' => true,
         ),
     ),
     'env' => getenv('ENV'), // 'prod' or 'test'

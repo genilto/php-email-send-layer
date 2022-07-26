@@ -13,16 +13,16 @@ use Microsoft\Graph\Model\Recipient;
 
 class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
 
-    private $authParams;
+    private $params;
     private $email;
-
+    
     /**
      * Create a Microsoft Graph Adapter
      *
      * @param string $accessToken
      */
-    public function __construct ($authParams) {
-        $this->authParams = $authParams;
+    public function __construct ($params) {
+        $this->params = $params;
         $this->email = new Message();
     }
     public function getMailerName () {
@@ -42,18 +42,28 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         $this->email->setFrom( $this->createRecipient($address, $name) );
         $this->email->setSender( $this->email->getFrom() );
     }
+    private function addRecipientToList ($recipientList, $address, $name) {
+        if ($recipientList === null) {
+            $recipientList = array();
+        }
+        $recipientList[] = $this->createRecipient($address, $name);
+        return $recipientList;
+    }
     public function addReplyTo($address, $name = '') {
-        $this->email->setReplyTo( $this->createRecipient($address, $name) );
+        $this->email->setReplyTo( $this->addRecipientToList ($this->email->getReplyTo(), $address, $name) );
         return true;
     }
     public function addAddress ($address, $name = '') {
-        $this->email->setToRecipients([ $this->createRecipient($address, $name) ]);
+        $this->email->setToRecipients( $this->addRecipientToList ($this->email->getToRecipients(), $address, $name) );
+        return true;
     }
     public function addCC($address, $name = '') {
-        return $this->email->setCcRecipients([ $this->createRecipient($address, $name) ]);
+        $this->email->setCcRecipients( $this->addRecipientToList ($this->email->getCcRecipients(), $address, $name) );
+        return true;
     }
     public function addBcc($address, $name = '') {
-        return $this->email->setBccRecipients([ $this->createRecipient($address, $name) ]);
+        $this->email->setBccRecipients( $this->addRecipientToList ($this->email->getBccRecipients(), $address, $name) );
+        return true;
     }
     public function addAttachment($path, $name = '') {
         $contents = SBMailerUtils::getFileContents($path);
@@ -109,17 +119,15 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
     public function send () {
         $mailBody = array(
             "Message" => $this->email,
-            "saveToSentItems" => true
+            "saveToSentItems" => !empty($this->params["save_to_sent_items"]) && $this->params["save_to_sent_items"] == true ? true : false,
         );
 
         $accessToken = $this->getAuthToken ();
 
-        echo "TOKEN: " . $accessToken;
-
         $graph = new Graph();
         $graph->setAccessToken($accessToken);
 
-        $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress() . "/sendMail")
+        $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress()->getAddress() . "/sendMail")
                     ->attachBody($mailBody)
                     ->execute();
         return true;
@@ -127,11 +135,11 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
 
     private function getAuthToken () {
         $guzzle = new \GuzzleHttp\Client();
-        $url = 'https://login.microsoftonline.com/' . $this->authParams["tenant_id"] . '/oauth2/v2.0/token';
+        $url = 'https://login.microsoftonline.com/' . $this->params["tenant_id"] . '/oauth2/v2.0/token';
         $token = json_decode($guzzle->post($url, [
             'form_params' => [
-                'client_id' => $this->authParams["client_id"],
-                'client_secret' => $this->authParams["client_secret"],
+                'client_id' => $this->params["client_id"],
+                'client_secret' => $this->params["client_secret"],
                 'scope' => 'https://graph.microsoft.com/.default',
                 'grant_type' => 'client_credentials',
             ],
