@@ -152,11 +152,11 @@ class SBMailer {
     }
     /**
      * Creates a instance of SBMailer by Adapter Name
-     * Include the adapter file if needed
+     * Include the internal adapter file if needed
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
-    public static function includeAndCreateByName ($adapterName, $adapterParams) {
+    private static function includeAndCreateByName ($adapterName, $adapterParams) {
         if (!SBMailerUtils::existsAdapter($adapterName)) {
             @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
         }

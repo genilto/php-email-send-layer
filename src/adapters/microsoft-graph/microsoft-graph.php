@@ -124,13 +124,23 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         $accessToken = $this->getAuthToken ();
         $graph = new Graph();
         $graph->setAccessToken($accessToken);
-        $sendResult = $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress()->getAddress() . "/sendMail")
-                    ->attachBody($mailBody)
-                    ->execute();
-        // echo "<pre>";
-        // print_r($sendResult);
-        // echo "</pre>";
-        return true;
+        
+        try {
+            $sendResult = $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress()->getAddress() . "/sendMail")
+                        ->attachBody($mailBody)
+                        ->execute();
+            // echo "<pre>";
+            // print_r($sendResult);
+            // echo "</pre>";
+            return true;
+        
+        } catch (Exception $e) {
+            // echo "<pre>";
+            // print_r($e);
+            // echo "</pre>";
+            throw $e;
+        }
+        return false;
     }
 
     private function getAuthToken () {
