@@ -99,7 +99,10 @@ class SBMailersendAdapter implements iSBMailerAdapter {
 
         try {
             $mailersend = new MailerSend(['api_key' => $this->apiKey]);
-            $mailersend->email->send($this->email);
+            $sendResult = $mailersend->email->send($this->email);
+            // echo "<pre>";
+            // print_r($sendResult);
+            // echo "</pre>";
             return true;
         } catch (MailerSendValidationException $e) {
             $response = $e->getResponse();

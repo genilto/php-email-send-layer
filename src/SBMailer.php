@@ -204,6 +204,7 @@ class SBMailer {
                 );
         } catch (Exception $e) {
             $this->ErrorInfo = $e->getMessage();
+            $this->logError ('addAttachment()', $this->ErrorInfo);
             return false;
         }
     }
@@ -328,9 +329,15 @@ class SBMailer {
             }
         }
     }
-    private function logError ($errorMessage) {
+    private function logError ($where, $errorMessage) {
         
     }
+
+    /**
+     * Sends the email
+     * 
+     * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
+     */
     public function send () {
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
@@ -350,7 +357,7 @@ class SBMailer {
             }
 
             // Exception logging
-            $this->logError( $this->ErrorInfo );
+            $this->logError('send()', $this->ErrorInfo );
         }
         return false;
     }

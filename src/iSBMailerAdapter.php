@@ -103,7 +103,7 @@ interface iSBMailerAdapter
      * 
      * @throws \Exception
      * 
-     * @return bool false on error - See the ErrorInfo property for details of the error
+     * @return bool false on error
      */
     public function send ();
 }

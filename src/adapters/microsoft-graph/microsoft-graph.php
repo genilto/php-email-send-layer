@@ -121,15 +121,15 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
             "Message" => $this->email,
             "saveToSentItems" => !empty($this->params["save_to_sent_items"]) && $this->params["save_to_sent_items"] == true ? true : false,
         );
-
         $accessToken = $this->getAuthToken ();
-
         $graph = new Graph();
         $graph->setAccessToken($accessToken);
-
-        $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress()->getAddress() . "/sendMail")
+        $sendResult = $graph->createRequest("POST", "/users" . "/" . $this->email->getFrom()->getEmailAddress()->getAddress() . "/sendMail")
                     ->attachBody($mailBody)
                     ->execute();
+        // echo "<pre>";
+        // print_r($sendResult);
+        // echo "</pre>";
         return true;
     }
 

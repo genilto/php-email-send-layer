@@ -78,6 +78,10 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         $sendgrid = new \SendGrid($this->apiKey);
         $response = $sendgrid->send($this->email);
 
+        // echo "RESULT: <pre>";
+        // print_r($response);
+        // echo "</pre>";
+
         // Verify the response code from Sendgrid
         if ($response->statusCode() < 200 || $response->statusCode() > 299) {
             $errorMessage = "Status Code returned by Sendgrid: " . $response->statusCode() . ". Details: ";

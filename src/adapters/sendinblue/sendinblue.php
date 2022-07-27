@@ -133,24 +133,23 @@ class SBSendinblueAdapter implements iSBMailerAdapter {
 
         try {
             $result = $apiInstance->sendTransacEmail($this->email);
-            echo "RESULT: <pre>";
-            print_r($result);
-            echo "</pre>";
+            // echo "RESULT: <pre>";
+            // print_r($result);
+            // echo "</pre>";
             return true;
         } catch (ApiException $e) {
-            // $responseBody = $e->getResponseBody();
-            // if (empty($responseBody)) {
-            //     throw $e;
-            // }
-            // $data = json_decode($responseBody);
-            // if (empty($data['code'])) {
-            //     throw $e;
-            // }
-            // throw new \Exception($data['code'] . ' - ' . $data['message']);
-
-        } catch (\Exception $e) {
-            throw $e;
+            $responseBody = $e->getResponseBody();
+            if (empty($responseBody)) {
+                throw $e;
+            }
+            $data = json_decode($responseBody);
+            if (empty($data) || empty($data->code)) {
+                throw $e;
+            }
+            $errorMessage = "Status Code returned by Sendinblue: " . $data->code . ". Details: " . $data->message;
+            throw new \Exception($errorMessage);
         }
+        return false;
     }
 }
 
