@@ -12,6 +12,9 @@ define('SBMAILER', array (
         'mailersend' => array (
             'api_key' => getenv('MAILERSEND_API_KEY')
         ),
+        'sendinblue' => array (
+            'api_key' => getenv('SENDINBLUE_API_KEY')
+        ),
         // 'phpmailer' => array (), // Using mail function
         'phpmailer' => array ( // Using SMTP function
             'smtp_server'   => getenv('MAIL_SMTP_SERVER'),

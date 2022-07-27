@@ -13,7 +13,7 @@ class SBSendgridAdapter implements iSBMailerAdapter {
     /**
      * Create a sendgrid Adapter
      *
-     * @param string $params
+     * @param array $params
      */
     public function __construct ($params) {
         $this->apiKey = $params['api_key'];
