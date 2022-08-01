@@ -28,5 +28,8 @@
             "dist/",
             "html/"
         ]
+    },
+    "require": {
+        "analog/analog": "^1.0"
     }
 }

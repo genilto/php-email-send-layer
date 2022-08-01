@@ -3,7 +3,8 @@
 interface iSBMailerAdapter
 {
     /**
-     * Gets the instantiated mailer name
+     * Gets the instantiated mailer adapter name
+     * 
      * @return string
      */
     public function getMailerName ();
@@ -12,7 +13,7 @@ interface iSBMailerAdapter
      * Sets the from field of the email
      *
      * @param string $address
-     * @param string $name
+     * @param string $name (optional)
      */
     public function setFrom($address, $name = '');
 
@@ -20,7 +21,8 @@ interface iSBMailerAdapter
      * Sets the Reply to field of the email
      *
      * @param string $address
-     * @param string $name
+     * @param string $name  (optional)
+     * 
      * @return bool true on success, false if address already used or invalid in some way
      */
     public function addReplyTo($address, $name = '');
@@ -29,7 +31,8 @@ interface iSBMailerAdapter
      * Add recipient to the TO field of the email
      *
      * @param string $address
-     * @param string $name
+     * @param string $name (optional)
+     * 
      * @return bool true on success, false if address already used or invalid in some way
      */
     public function addAddress ($address, $name = '');
@@ -38,7 +41,8 @@ interface iSBMailerAdapter
      * Add recipient to the CC field of the email
      *
      * @param string $address
-     * @param string $name
+     * @param string $name (optional)
+     * 
      * @return bool true on success, false if address already used or invalid in some way
      */
     public function addCC($address, $name = '');
@@ -47,7 +51,8 @@ interface iSBMailerAdapter
      * Add recipient to the BCC field of the email
      *
      * @param string $address
-     * @param string $name
+     * @param string $name (optional)
+     * 
      * @return bool true on success, false if address already used or invalid in some way
      */
     public function addBcc($address, $name = '');
@@ -60,7 +65,7 @@ interface iSBMailerAdapter
      * If you need to do that, fetch the resource yourself and pass it in via a local file
      *
      * @param string $path Path of the file in server filesystem
-     * @param string $name Name to display the attachment in email
+     * @param string $name (optional) Name to display the attachment in email
      * 
      * @throws Exception
      *
@@ -91,8 +96,7 @@ interface iSBMailerAdapter
     public function setTextBody($body);
 
     /**
-     * Sets a tag for better classification of
-     * emails
+     * Sets a tag for better message classification
      *
      * @param string $tagName
      */

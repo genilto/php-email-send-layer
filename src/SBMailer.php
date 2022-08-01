@@ -1,11 +1,31 @@
 <?php
 
+use Psr\Log\LoggerInterface;
+use Analog\Logger;
+
 class SBMailer {
 
     /**
-     * Line break
+     * The adapter
+     * 
+     * @var iSBMailerAdapter
      */
-    private const LB = "\n";
+    private $mailAdapter;
+
+    /**
+     * The Tag. Usefull to classify the messages
+     * 
+     * @var string
+     */
+    private $tag = '';
+
+    /**
+     * Logging adapter
+     * 
+     * @var LoggerInterface
+     */
+    private $logger = null;
+    
     /**
      * Test Environment control
      */
@@ -19,6 +39,8 @@ class SBMailer {
      * When migrating from PHPMailer to SBMailer, We can just change the 
      * imports and the instance of the object, everything else must work
      * like a charm
+     * 
+     * @var string
      */
     public $ErrorInfo = '';
 
@@ -38,6 +60,13 @@ class SBMailer {
     public $Body = '';
 
     /**
+     * When the body is in HTML or not
+     * 
+     * @var boolean
+     */
+    private $isHTMLMessage = true;
+
+    /**
      * The plain-text message body.
      * This body can be read by mail clients that do not have HTML email
      * capability such as mutt & Eudora.
@@ -47,11 +76,12 @@ class SBMailer {
      */
     public $AltBody = '';
 
-    private $mailAdapter;
-    private $isHTMLMessage = true;
-    private $tag = '';
-
-    // To validate duplicates
+    /**
+     * Keeps all the recipients by type
+     * Uses the lists to control the duplicates
+     * 
+     * @var array
+     */
     private $allRecipients = array(
         "reply_to" => array(),
         "to" => array(),
@@ -59,24 +89,33 @@ class SBMailer {
         "bcc" => array()
     );
 
-    public function __construct ($mailAdapter) {
-        $this->mailAdapter = $mailAdapter;
-    }
-
     /**
-     * Defines the env as Test
-     * testAddress must be set to redirect all messages to it
+     * Instantiate the class
      * 
-     * @param $isTestEnv
+     * @param iSBMailerAdapter $mailAdapter
+     * @param LoggerInterface $logger (optional)
+     */
+    public function __construct ($mailAdapter, $logger = null) {
+        $this->mailAdapter = $mailAdapter;
+        $this->logger = $logger;
+    }
+    
+    /**
+     * Defines the env as Test or Not
+     * When true, testAddress must be set to redirect all messages to it
+     * 
+     * @param boolean $isTestEnv
      */
     public function isTestEnv ($isTestEnv = true) {
         $this->isTestEnv = $isTestEnv;
     }
+
     /**
      * When isTestEnv = true
      * testAddress is required and can be set here
      * 
-     * @param $isTestEnv
+     * @param string $testAddress Email address
+     * @param string $testAddressName (optional) Name
      */
     public function setTestAddress ($testAddress, $testAddressName = '') {
         $this->testAddress = SBMailerUtils::cleanAddress($testAddress);
@@ -127,13 +166,14 @@ class SBMailer {
         if (!empty(SBMAILER['env']) && strtolower(SBMAILER['env']) == 'test') {
             $mailer->isTestEnv();
             if (empty(SBMAILER['test_address'])) {
-                throw new \Exception('"test_address" not found for test environment in SBMAILER constant.');
+                throw new \Exception('"test_address" not found for test environment in SBMAILER default configuration.');
             }
             $testAddressName = !empty(SBMAILER['test_address_name']) ? SBMAILER['test_address_name'] : null;
             $mailer->setTestAddress(SBMAILER['test_address'], $testAddressName);
         }
         return $mailer;
     }
+
     /**
      * Creates a instance of SBMailer by Adapter Name
      * The adapter must be previously loaded
@@ -145,11 +185,20 @@ class SBMailer {
         if (!$adapterConfiguration) {
             throw new \Exception("SBMailer Adapter $adapterName not found!");
         }
+        
+        // Instatiate the adapter
         $mailAdapterClass = new ReflectionClass($adapterConfiguration['className']);
         $mailAdapter = $mailAdapterClass->newInstanceArgs( array ( $adapterParams ) );
-        $mailer = new SBMailer( $mailAdapter );
+
+        // Create Default Logger
+        $logger = new Logger();
+        $logger->handler (false); // The default handler
+
+        // Create the SBMailer instance
+        $mailer = new SBMailer( $mailAdapter, $logger );
         return $mailer;
     }
+
     /**
      * Creates a instance of SBMailer by Adapter Name
      * Include the internal adapter file if needed
@@ -162,17 +211,37 @@ class SBMailer {
         }
         return self::createByName($adapterName, $adapterParams);
     }
+
+    /**
+     * Gets the instantiated mailer adapter name
+     * 
+     * @return string
+     */
     public function getMailerName () {
         return $this->mailAdapter->getMailerName();
     }
+
+    /**
+     * Sets the from field of the email
+     *
+     * @param string $address
+     * @param string $name (optional)
+     */
     public function setFrom($address, $name = '') {
         $this->mailAdapter->setFrom(
             SBMailerUtils::cleanAddress($address), 
             SBMailerUtils::cleanName($name));
     }
+
     /**
      * Add an address to the list
      * Do not add again in case it already exists
+     * 
+     * @param string $kind (reply_to, to, cc, bcc)
+     * @param string $address
+     * @param string $name (optional)
+     * 
+     * @return true when success, false when duplicated
      */
     private function addAnAddress ($kind, $address, $name = '') {
         $fixedAddress = SBMailerUtils::cleanAddress($address);
@@ -184,18 +253,69 @@ class SBMailer {
         $this->allRecipients[$kind][$key] = array("address" => $fixedAddress, "name" => $fixedName);
         return true;
     }
+
+    /**
+     * Sets the Reply to field of the email
+     *
+     * @param string $address
+     * @param string $name  (optional)
+     * 
+     * @return bool true on success, false if address already used or invalid in some way
+     */
     public function addReplyTo($address, $name = '') {
         return $this->addAnAddress ("reply_to", $address, $name);
     }
+
+    /**
+     * Add recipient to the TO field of the email
+     *
+     * @param string $address
+     * @param string $name (optional)
+     * 
+     * @return bool true on success, false if address already used or invalid in some way
+     */
     public function addAddress ($address, $name = '') {
         return $this->addAnAddress ("to", $address, $name);
     }
+
+    /**
+     * Add recipient to the CC field of the email
+     *
+     * @param string $address
+     * @param string $name (optional)
+     * 
+     * @return bool true on success, false if address already used or invalid in some way
+     */
     public function addCC($address, $name = '') {
         return $this->addAnAddress ("cc", $address, $name);
     }
+
+    /**
+     * Add recipient to the BCC field of the email
+     *
+     * @param string $address
+     * @param string $name (optional)
+     * 
+     * @return bool true on success, false if address already used or invalid in some way
+     */
     public function addBcc($address, $name = '') {
         return $this->addAnAddress ("bcc", $address, $name);
     }
+
+    /**
+     * Add an attachment from a path on the filesystem.
+     * Never use a user-supplied path to a file!
+     * Returns false if the file could not be found or read.
+     * Explicitly *does not* support passing URLs; It is not an HTTP client.
+     * If you need to do that, fetch the resource yourself and pass it in via a local file
+     *
+     * @param string $path Path of the file in server filesystem
+     * @param string $name (optional) Name to display the attachment in email
+     * 
+     * @throws Exception
+     *
+     * @return bool true when success, false when some error occurred and ErrorInfo will have details of the error
+     */
     public function addAttachment($path, $name = '') {
         try {
             return $this->mailAdapter->addAttachment(
@@ -204,13 +324,20 @@ class SBMailer {
                 );
         } catch (Exception $e) {
             $this->ErrorInfo = $e->getMessage();
-            $this->logError ('addAttachment()', $this->ErrorInfo);
+            $this->logError ('addAttachment', $this->ErrorInfo);
             return false;
         }
     }
+
+    /**
+     * Sets the email subject
+     *
+     * @param string $subject
+     */
     public function setSubject($subject) {
         $this->Subject = $subject;
     }
+
     /**
      * Sets message type to HTML or plain.
      *
@@ -219,21 +346,58 @@ class SBMailer {
     public function isHTML($isHtml = true) {
         $this->isHTMLMessage = $isHtml;
     }
+
+    /**
+     * Sets the email body
+     *
+     * @param string $body of the email
+     */
     public function setBody($body) {
         $this->Body = $body;
     }
-    public function setAltBody($altBody) {
-        $this->AltBody = $altBody;
+
+    /**
+     * Sets the email alternative body
+     * Displayed when email reader doenst support HTML
+     *
+     * @param string $body Text body
+     */
+    public function setAltBody($body) {
+        $this->AltBody = $body;
     }
+
+    /**
+     * Sets a tag for better message classification
+     *
+     * @param string $tagName
+     */
     public function setTag($tag) {
         $this->tag = SBMailerUtils::cleanName($tag);
     }
+
+    /**
+     * Append an extra content to the body of message
+     * Used in test environment to idicates to whom the message
+     * would be sent
+     *
+     * @param string $content The content to be appended to Body
+     * @param boolean $addLineBreak (optional) default to add a line break at the end of content
+     */
     private function appendExtraBody ($content, $addLineBreak = true) {
         $this->bodyToAppend .= $content;
         if ($addLineBreak) {
-            $this->bodyToAppend .= self::LB;
+            $this->bodyToAppend .= "\n";
         }
     }
+
+    /**
+     * When in test environment, append all the recipients that would
+     * receive the message to the body of the email
+     *
+     * @param string $address The email address
+     * @param string $name Name
+     * @param boolean $duplicated Indicates when the address is duplicated
+     */
     private function appendAddressesToExtraBody ($address, $name, $duplicated) {
         if ($this->isTestEnv) {
             $this->appendExtraBody(" - ", false);
@@ -247,10 +411,16 @@ class SBMailer {
             $this->appendExtraBody("");
         }
     }
+
+    /**
+     * Initializes the Test Environment configuration body
+     */
     private function initializeTestEnv () {
         if ($this->isTestEnv) {
             $this->mailAdapter->addAddress($this->testAddress, $this->testAddressName);
-            $this->appendExtraBody(self::LB . self::LB);
+            $this->appendExtraBody("");
+            $this->appendExtraBody("");
+            $this->appendExtraBody("");
             
             $this->appendExtraBody("----------------------------------------------------------------------------");
             $tag = empty($this->tag) ? "" : " TAG: " . $this->tag;
@@ -265,6 +435,7 @@ class SBMailer {
             $this->appendExtraBody("Below are the recipients who would receive this message:");
         }
     }
+
     /**
      * Check if the address exists
      * 
@@ -284,9 +455,22 @@ class SBMailer {
         }
         return false;
     }
+
+    /**
+     * Add the email address to corresponding method on adapter
+     * It checks if the address is duplicated and not add it twice
+     * 
+     * @param string $listKey The field to be added (reply_to, to, cc, bcc)
+     * @param string $method The method to be called on adapter (eg. 'addAddress')
+     * @param array $listKeysToCheckDuplicates Array with the lists to check for duplicated
+     * @param boolean $ignoreTest (optional) When add even in test environment. Defaults to false
+     */
     private function addAddressListToAdapter($listKey, $method, $listKeysToCheckDuplicates = array(), $ignoreTest = false) {
         if (!empty($this->allRecipients[$listKey])) {
-            if ($this->isTestEnv) $this->appendExtraBody(self::LB . strtoupper($listKey) . ":");
+            if ($this->isTestEnv) {
+                $this->appendExtraBody("");
+                $this->appendExtraBody( strtoupper($listKey) . ":");
+            }
             foreach ($this->allRecipients[$listKey] as $email) {
                 $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
                 
@@ -298,6 +482,11 @@ class SBMailer {
             }
         }
     }
+
+    /**
+     * Handle the recipients. Check duplicates and add each to corresponding method 
+     * in current adapter
+     */
     private function handleRecipients () {
         $this->initializeTestEnv();
         $this->addAddressListToAdapter("reply_to", "addReplyTo", array(), true);
@@ -305,8 +494,9 @@ class SBMailer {
         $this->addAddressListToAdapter("cc", "addCC", array("to"));
         $this->addAddressListToAdapter("bcc", "addBcc", array("to", "cc")) ;
     }
+
     /**
-     * Sets Email body to the adapter
+     * Sets the Email body to the adapter
      */
     private function handleBody () {
         $addText = true;
@@ -329,8 +519,18 @@ class SBMailer {
             }
         }
     }
+
+    /**
+     * Log the error ocurred using the current Log Handler
+     * 
+     * @param string $where
+     * @param string $errorMessage
+     */
     private function logError ($where, $errorMessage) {
-        
+        if ($this->logger === null) {
+            return;
+        }
+        $this->logger->error( "($where) $errorMessage" );
     }
 
     /**
@@ -357,10 +557,16 @@ class SBMailer {
             }
 
             // Exception logging
-            $this->logError('send()', $this->ErrorInfo );
+            $this->logError('send', $this->ErrorInfo );
         }
         return false;
     }
+
+    /**
+     * Get the Last error ocurred
+     * 
+     * @return string The error
+     */
     public function getErrorInfo() {
         return $this->ErrorInfo;
     }
