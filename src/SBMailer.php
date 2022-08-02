@@ -191,8 +191,9 @@ class SBMailer {
         $mailAdapter = $mailAdapterClass->newInstanceArgs( array ( $adapterParams ) );
 
         // Create Default Logger
+        $currentDate = date("Y-m-d");
         $logger = new Logger();
-        $logger->handler (false); // The default handler
+        $logger->handler (__DIR__ . "/../logs/$currentDate-$adapterName.log");
 
         // Create the SBMailer instance
         $mailer = new SBMailer( $mailAdapter, $logger );
@@ -324,7 +325,7 @@ class SBMailer {
                 );
         } catch (Exception $e) {
             $this->ErrorInfo = $e->getMessage();
-            $this->logError ('addAttachment', $this->ErrorInfo);
+            $this->logError ('addAttachment', $this->ErrorInfo, array('exception' => $e));
             return false;
         }
     }
@@ -474,6 +475,10 @@ class SBMailer {
             foreach ($this->allRecipients[$listKey] as $email) {
                 $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
                 
+                if ($duplicated) {
+                    $this->logWarning("addAddressListToAdapter", "Duplicated Address", array("list" => $listKey, "email" => $email));
+                }
+
                 if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
                     $this->mailAdapter->$method($email["address"], $email["name"]);
                 }
@@ -521,16 +526,47 @@ class SBMailer {
     }
 
     /**
+     * Log the message ocurred using the current Log Handler
+     * 
+     * @param string $method
+     * @param string $where
+     * @param string $errorMessage
+     * @param array $context
+     */
+    private function log ($method, $where, $errorMessage, $context) {
+        if ($this->logger === null) {
+            return;
+        }
+        $error = $errorMessage;
+        if (!empty($this->tag)) {
+            $context["tag"] = $this->tag;
+        }
+        if (count($context) > 0) {
+            $error .= ' | CONTEXT: {data}';
+        }
+        $this->logger->$method( "($where) $error", array("data" => $context) );
+    }
+
+    /**
      * Log the error ocurred using the current Log Handler
      * 
      * @param string $where
      * @param string $errorMessage
+     * @param array $context
      */
-    private function logError ($where, $errorMessage) {
-        if ($this->logger === null) {
-            return;
-        }
-        $this->logger->error( "($where) $errorMessage" );
+    private function logError ($where, $errorMessage, array $context = array()) {
+        $this->log("error", $where, $errorMessage, $context );
+    }
+
+    /**
+     * Log the warning ocurred using the current Log Handler
+     * 
+     * @param string $where
+     * @param string $errorMessage
+     * @param array $context
+     */
+    private function logWarning ($where, $errorMessage, array $context = array()) {
+        $this->log("warning", $where, $errorMessage, $context );
     }
 
     /**
@@ -555,9 +591,8 @@ class SBMailer {
             if (empty($this->ErrorInfo)) {
                 $this->ErrorInfo = "Email was not sent! No details found!";
             }
-
             // Exception logging
-            $this->logError('send', $this->ErrorInfo );
+            $this->logError('send', $this->ErrorInfo, array('exception' => $e) );
         }
         return false;
     }

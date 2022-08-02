@@ -8,24 +8,24 @@
     "packages": [
         {
             "name": "analog/analog",
-            "version": "1.0.19-stable",
+            "version": "1.0.16-stable",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jbroadway/analog.git",
-                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee"
+                "reference": "36b401fdc5c51b824d85b0f494dd0b56a6ae7919"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jbroadway/analog/zipball/53afd53b77bf911d926e5b895484a3fed3479aee",
-                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee",
+                "url": "https://api.github.com/repos/jbroadway/analog/zipball/36b401fdc5c51b824d85b0f494dd0b56a6ae7919",
+                "reference": "36b401fdc5c51b824d85b0f494dd0b56a6ae7919",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2",
-                "psr/log": "^1.0.1"
+                "php": ">=5.3.2",
+                "psr/log": "1.*"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.5"
+                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5"
             },
             "type": "library",
             "autoload": {
@@ -44,36 +44,23 @@
                     "homepage": "http://www.johnnybroadway.com/"
                 }
             ],
-            "description": "Fast, flexible, easy PSR-3-compatible PHP logging package with dozens of handlers.",
+            "description": "Fast, flexible, and easy PHP logging class with over 20 log handlers, supports PSR-3, and can also be extended via closures.",
             "homepage": "https://github.com/jbroadway/analog",
             "keywords": [
-                "PSR3",
                 "alerts",
-                "amon",
-                "apprise",
-                "chrome-logger",
-                "console",
                 "debug",
                 "debugging",
                 "error",
-                "errors",
-                "firephp",
-                "gelf",
                 "log",
                 "logger",
                 "logging",
-                "logs",
-                "monitor",
-                "monitoring",
-                "psr-3",
-                "stderr",
                 "syslog"
             ],
             "support": {
                 "issues": "https://github.com/jbroadway/analog/issues",
-                "source": "https://github.com/jbroadway/analog/tree/1.0.19-stable"
+                "source": "https://github.com/jbroadway/analog/tree/1.0.16-stable"
             },
-            "time": "2021-11-05T03:59:12+00:00"
+            "time": "2020-05-19T20:13:16+00:00"
         },
         {
             "name": "psr/log",
@@ -134,5 +121,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }
