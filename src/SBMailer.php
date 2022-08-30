@@ -77,6 +77,13 @@ class SBMailer {
     public $AltBody = '';
 
     /**
+     * From email
+     * 
+     * @var array
+     */
+    private $from = null;
+
+    /**
      * Keeps all the recipients by type
      * Uses the lists to control the duplicates
      * 
@@ -229,9 +236,10 @@ class SBMailer {
      * @param string $name (optional)
      */
     public function setFrom($address, $name = '') {
-        $this->mailAdapter->setFrom(
-            SBMailerUtils::cleanAddress($address), 
-            SBMailerUtils::cleanName($name));
+        $this->from = array(
+            "address" => SBMailerUtils::cleanAddress($address), 
+            "name" => SBMailerUtils::cleanName($name)
+        );
     }
 
     /**
@@ -242,10 +250,13 @@ class SBMailer {
      * @param string $address
      * @param string $name (optional)
      * 
-     * @return true when success, false when duplicated
+     * @return boolean true when success, false when not added
      */
     private function addAnAddress ($kind, $address, $name = '') {
         $fixedAddress = SBMailerUtils::cleanAddress($address);
+        if (empty($fixedAddress)) {
+            return false;
+        }
         $fixedName = SBMailerUtils::cleanName($name);
         $key = strtolower($fixedAddress);
         if (array_key_exists($key, $this->allRecipients[$kind])) {
@@ -495,9 +506,9 @@ class SBMailer {
     private function handleRecipients () {
         $this->initializeTestEnv();
         $this->addAddressListToAdapter("reply_to", "addReplyTo", array(), true);
-        $this->addAddressListToAdapter("to", "addAddress") ;
+        $this->addAddressListToAdapter("to", "addAddress");
         $this->addAddressListToAdapter("cc", "addCC", array("to"));
-        $this->addAddressListToAdapter("bcc", "addBcc", array("to", "cc")) ;
+        $this->addAddressListToAdapter("bcc", "addBcc", array("to", "cc"));
     }
 
     /**
@@ -570,6 +581,25 @@ class SBMailer {
     }
 
     /**
+     * Do a basic validation to the email created
+     * before send it to adapter
+     * 
+     * @throws \Exception when validation fails
+     */
+    private function basicValidation () {
+        
+        // From Email must be set
+        if ($this->from == null || empty($this->from['address'])) {
+            throw new Exception("From address must be informed!");
+        }
+
+        // At least one TO recipient must be set
+        if (empty($this->allRecipient) || empty($this->allRecipients["to"])) {
+            throw new Exception("At least one TO recipient must be informed!");
+        }
+    }
+
+    /**
      * Sends the email
      * 
      * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
@@ -584,8 +614,19 @@ class SBMailer {
         }
 
         try {
+            // Do some basic validations before send
+            $this->basicValidation();
+
+            // Add the FROM to the adapter
+            $this->mailAdapter->setFrom(
+                $this->from['address'], 
+                $this->from['name']
+            );
+
+            // Sends the email
             $this->mailAdapter->send();
             return true;
+            
         } catch (\Exception $e) {
             $this->ErrorInfo = $e->getMessage();
             if (empty($this->ErrorInfo)) {

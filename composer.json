@@ -1,5 +1,5 @@
 {
-    "name": "sbmailer/sbmailer",
+    "name": "genilto/sbmailer",
     "description": "A small layer created to abstract the ways to send emails with php.",
     "homepage": "https://github.com/genilto/sbmailer",
     "license": "GNU",
