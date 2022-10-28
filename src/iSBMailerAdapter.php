@@ -110,4 +110,13 @@ interface iSBMailerAdapter
      * @return bool false on error
      */
     public function send ();
+
+    /**
+     * Check if a retry could be done for the error exception
+     * 
+     * @param Exception exception to be analysed
+     * 
+     * @return bool true when could retry sending
+     */
+    public function couldRetryOnError ($exception);
 }

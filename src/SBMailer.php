@@ -590,13 +590,56 @@ class SBMailer {
         
         // From Email must be set
         if ($this->from == null || empty($this->from['address'])) {
-            throw new Exception("From address must be informed!");
+            $this->ErrorInfo = "From address must be informed!";
+            return false;
         }
 
         // At least one TO recipient must be set
-        if (empty($this->allRecipient) || empty($this->allRecipients["to"])) {
-            throw new Exception("At least one TO recipient must be informed!");
+        if (empty($this->allRecipients) || empty($this->allRecipients["to"])) {
+            $this->ErrorInfo = "At least one TO recipient must be informed!";
+            return false;
         }
+
+        return true;
+    }
+
+    /**
+     * Sends the email, retry on error
+     * 
+     * @param int $retryCount The number of times a retry on error was done
+     * 
+     * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
+     */
+    private function doSending ($retryCount = 0) {
+        try {
+            // Send the message
+            $this->mailAdapter->send();
+            return true;
+        } catch (\Exception $e) {
+            $this->ErrorInfo = $e->getMessage();
+
+            if (empty($this->ErrorInfo)) {
+                $this->ErrorInfo = "Email was not sent! No details found!";
+            }
+            
+            if ($retryCount > 0) {
+                $this->ErrorInfo .= " ($retryCount retries)";
+            }
+
+            // Retry for 2 times
+            $retry = $retryCount < 2 && $this->mailAdapter->couldRetryOnError ($e);
+            if ($retry) {
+                $this->ErrorInfo .= ' Trying again...';
+            }
+
+            // Exception logging
+            $this->logError('doSending', $this->ErrorInfo, array('exception' => $e) );
+
+            if ($retry) {
+                return $this->doSending( ($retryCount + 1) );
+            }
+        }
+        return false;
     }
 
     /**
@@ -609,33 +652,23 @@ class SBMailer {
         $this->mailAdapter->setSubject( $this->Subject );
         $this->handleBody();
 
+        // Do some basic validations before sending
+        if (!$this->basicValidation()) {
+            $this->logError('send', $this->ErrorInfo );
+            return false;
+        }
+
         if (!empty($this->tag)) {
             $this->mailAdapter->setTag($this->tag);
         }
 
-        try {
-            // Do some basic validations before send
-            $this->basicValidation();
+        // Add the FROM to the adapter
+        $this->mailAdapter->setFrom(
+            $this->from['address'], 
+            $this->from['name']
+        );
 
-            // Add the FROM to the adapter
-            $this->mailAdapter->setFrom(
-                $this->from['address'], 
-                $this->from['name']
-            );
-
-            // Sends the email
-            $this->mailAdapter->send();
-            return true;
-            
-        } catch (\Exception $e) {
-            $this->ErrorInfo = $e->getMessage();
-            if (empty($this->ErrorInfo)) {
-                $this->ErrorInfo = "Email was not sent! No details found!";
-            }
-            // Exception logging
-            $this->logError('send', $this->ErrorInfo, array('exception' => $e) );
-        }
-        return false;
+        return $this->doSending ();
     }
 
     /**

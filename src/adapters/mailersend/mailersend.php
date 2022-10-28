@@ -136,6 +136,9 @@ class SBMailersendAdapter implements iSBMailerAdapter {
         }
         return false;
     }
+    public function couldRetryOnError ($exception) {
+        return false;
+    }
 }
 
 // Register the new adapter

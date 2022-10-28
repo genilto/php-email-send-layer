@@ -70,6 +70,9 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
             throw new \Exception($e->getMessage());
         }
     }
+    public function couldRetryOnError ($exception) {
+        return false;
+    }
 }
 
 // Register the new adapter

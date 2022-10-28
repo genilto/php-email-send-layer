@@ -126,6 +126,37 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
 
         return true;
     }
+    public function couldRetryOnError ($exception) {
+        $message = $exception->getMessage();
+
+        // cURL error 28: Connection timed out after xxxx milliseconds (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)
+        return !empty($message) && strpos($message, "cURL error 28") !== false;
+
+        /*$trace = $exception->getTrace();
+        if (empty($trace) || !is_array($trace) || empty($trace[0])) {
+            return false;
+        }
+        $trace0 = $trace[0];
+        if (empty($trace0['class']) || $trace0['class'] != 'GuzzleHttp\Handler\CurlFactory' || empty($trace0['args'])) {
+            return false;
+        }
+        $args = $trace0['args'];
+        if (empty($args[1])) {
+            return false;
+        }
+        $args1 = $args[1];
+        if (empty( $args1['errno'] )) {
+            return false;
+        }
+        
+        echo "<textarea>";
+        //print_r( $e->getTrace()[0]["args"][1]["errno"] );
+        print_r( $args1['errno'] );
+        echo "</textarea>";
+
+        // cURL error 28: Connection timed out after xxxx milliseconds (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)
+        return $args1['errno'] == 28;*/
+    }
 }
 
 // Register the new adapter

@@ -103,6 +103,9 @@ class SBSendgridAdapter implements iSBMailerAdapter {
         }
         return true;
     }
+    public function couldRetryOnError ($exception) {
+        return false;
+    }
 }
 
 // Register the new adapter

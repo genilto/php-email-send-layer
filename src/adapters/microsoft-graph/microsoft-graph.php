@@ -156,6 +156,10 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         ])->getBody()->getContents());
         return $token->access_token;
     }
+
+    public function couldRetryOnError ($exception) {
+        return false;
+    }
 }
 
 // Register the new adapter
