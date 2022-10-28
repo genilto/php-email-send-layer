@@ -486,9 +486,9 @@ class SBMailer {
             foreach ($this->allRecipients[$listKey] as $email) {
                 $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
                 
-                if ($duplicated) {
-                    $this->logWarning("addAddressListToAdapter", "Duplicated Address", array("list" => $listKey, "email" => $email));
-                }
+                // if ($duplicated) {
+                //     $this->logWarning("addAddressListToAdapter", "Duplicated Address", array("list" => $listKey, "email" => $email));
+                // }
 
                 if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
                     $this->mailAdapter->$method($email["address"], $email["name"]);
