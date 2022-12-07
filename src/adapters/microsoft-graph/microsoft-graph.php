@@ -156,7 +156,12 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
         ])->getBody()->getContents());
         return $token->access_token;
     }
-
+    public function deferToQueue() {
+        throw new Exception("Batch not implemented");
+    }
+    public function sendQueue () {
+        throw new Exception("Batch not implemented");
+    }
     public function couldRetryOnError ($exception) {
         return false;
     }

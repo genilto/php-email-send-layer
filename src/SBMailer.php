@@ -1,5 +1,6 @@
 <?php
 
+use Analog\Analog;
 use Psr\Log\LoggerInterface;
 use Analog\Logger;
 
@@ -25,6 +26,7 @@ class SBMailer {
      * @var LoggerInterface
      */
     private $logger = null;
+    private $logLevel = 2; // FUll
     
     /**
      * Test Environment control
@@ -101,10 +103,15 @@ class SBMailer {
      * 
      * @param iSBMailerAdapter $mailAdapter
      * @param LoggerInterface $logger (optional)
+     * @param int $logLevel
      */
-    public function __construct ($mailAdapter, $logger = null) {
+    public function __construct ($mailAdapter, $logger = null, $logLevel = 2) {
         $this->mailAdapter = $mailAdapter;
         $this->logger = $logger;
+
+        if ($logLevel == 0 || $logLevel == 1 || $logLevel == 2) {
+            $this->logLevel = $logLevel;
+        }
     }
     
     /**
@@ -148,7 +155,7 @@ class SBMailer {
      *              'smtp_user'     => getenv('MAIL_SMTP_USER'),
      *              'smtp_password' => getenv('MAIL_SMTP_PASSWORD')
      *          ),
-     *          'debug_level' => 1, // 0 - Off | 1 - Error only | 2 - Full
+     *          'log_level' => 1, // 0 - Off | 1 - Error only | 2 - Full
      *          'env' => getenv('ENV'), // 'prod' or 'test'
      *          'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
      *          'test_address_name' => getenv('TEST_ADDRESS_NAME'),
@@ -167,7 +174,7 @@ class SBMailer {
         if (!empty(SBMAILER['params']) && !empty(SBMAILER['params'][$adapterName])) {
             $adapterParams = SBMAILER['params'][$adapterName];
         }
-        $mailer = self::includeAndCreateByName($adapterName, $adapterParams);
+        $mailer = self::includeAndCreateByName($adapterName, $adapterParams, SBMAILER);
 
         // Validate the test environment
         if (!empty(SBMAILER['env']) && strtolower(SBMAILER['env']) == 'test') {
@@ -187,7 +194,7 @@ class SBMailer {
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
-    public static function createByName ($adapterName, $adapterParams) {
+    public static function createByName ($adapterName, $adapterParams, $config = array()) {
         $adapterConfiguration = SBMailerUtils::getAdapter($adapterName);
         if (!$adapterConfiguration) {
             throw new \Exception("SBMailer Adapter $adapterName not found!");
@@ -202,8 +209,11 @@ class SBMailer {
         $logger = new Logger();
         $logger->handler (__DIR__ . "/../logs/$currentDate-$adapterName.log");
 
+        $logLevel = isset($config['log_level']) ? $config['log_level'] : null;
+
         // Create the SBMailer instance
-        $mailer = new SBMailer( $mailAdapter, $logger );
+        $mailer = new SBMailer( $mailAdapter, $logger, $logLevel);
+
         return $mailer;
     }
 
@@ -213,11 +223,11 @@ class SBMailer {
      * 
      * @throws \Exception if SBMailer Adapter not found
      */
-    private static function includeAndCreateByName ($adapterName, $adapterParams) {
+    private static function includeAndCreateByName ($adapterName, $adapterParams, $config = array()) {
         if (!SBMailerUtils::existsAdapter($adapterName)) {
             @include_once ( __DIR__ . "/adapters/$adapterName/$adapterName.php" );
         }
-        return self::createByName($adapterName, $adapterParams);
+        return self::createByName($adapterName, $adapterParams, $config);
     }
 
     /**
@@ -312,6 +322,15 @@ class SBMailer {
      */
     public function addBcc($address, $name = '') {
         return $this->addAnAddress ("bcc", $address, $name);
+    }
+
+    /**
+     * Clear Recipients: to, cc and bcc
+     */
+    public function clearRecipients () {
+        $this->allRecipients["to"] = array();
+        $this->allRecipients["cc"] = array();
+        $this->allRecipients["bcc"] = array();
     }
 
     /**
@@ -478,24 +497,22 @@ class SBMailer {
      * @param boolean $ignoreTest (optional) When add even in test environment. Defaults to false
      */
     private function addAddressListToAdapter($listKey, $method, $listKeysToCheckDuplicates = array(), $ignoreTest = false) {
-        if (!empty($this->allRecipients[$listKey])) {
-            if ($this->isTestEnv) {
-                $this->appendExtraBody("");
-                $this->appendExtraBody( strtoupper($listKey) . ":");
+        if (empty($this->allRecipients[$listKey])) {
+            return;
+        }
+        if ($this->isTestEnv) {
+            $this->appendExtraBody("");
+            $this->appendExtraBody( strtoupper($listKey) . ":");
+        }
+        foreach ($this->allRecipients[$listKey] as $email) {
+            $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);            
+            if ($duplicated) {
+                $this->logWarning("addAddressListToAdapter", "Duplicated Address", array("list" => $listKey, "email" => $email));
             }
-            foreach ($this->allRecipients[$listKey] as $email) {
-                $duplicated = $this->addressExistsInList ($email["address"], $listKeysToCheckDuplicates);
-                
-                // if ($duplicated) {
-                //     $this->logWarning("addAddressListToAdapter", "Duplicated Address", array("list" => $listKey, "email" => $email));
-                // }
-
-                if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
-                    $this->mailAdapter->$method($email["address"], $email["name"]);
-                }
-
-                $this->appendAddressesToExtraBody ($email["address"], $email["name"], $duplicated);
+            if ((!$this->isTestEnv || $ignoreTest) && !$duplicated) {
+                $this->mailAdapter->$method($email["address"], $email["name"]);
             }
+            $this->appendAddressesToExtraBody ($email["address"], $email["name"], $duplicated);
         }
     }
 
@@ -536,6 +553,17 @@ class SBMailer {
         }
     }
 
+    /** 
+     * Set the LogLevel 
+     * 
+     * @param int The log Level (0 - Off | 1 - Error only | 2 - Full)
+     * */
+    public function setLogLevel ($logLevel) {
+        if ($logLevel === 0 || $logLevel === 1 || $logLevel == 2) {
+            $this->logLevel = $logLevel;
+        }
+    }
+
     /**
      * Log the message ocurred using the current Log Handler
      * 
@@ -566,7 +594,9 @@ class SBMailer {
      * @param array $context
      */
     private function logError ($where, $errorMessage, array $context = array()) {
-        $this->log("error", $where, $errorMessage, $context );
+        if ($this->logLevel >= 1) {
+            $this->log("error", $where, $errorMessage, $context );
+        }
     }
 
     /**
@@ -577,7 +607,9 @@ class SBMailer {
      * @param array $context
      */
     private function logWarning ($where, $errorMessage, array $context = array()) {
-        $this->log("warning", $where, $errorMessage, $context );
+        if ($this->logLevel >= 2) {
+            $this->log("warning", $where, $errorMessage, $context );
+        }
     }
 
     /**
@@ -610,10 +642,10 @@ class SBMailer {
      * 
      * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
      */
-    private function doSending ($retryCount = 0) {
+    private function doSending ($method, $retryCount = 0) {
         try {
             // Send the message
-            $this->mailAdapter->send();
+            $this->mailAdapter->$method();
             return true;
         } catch (\Exception $e) {
             $this->ErrorInfo = $e->getMessage();
@@ -636,25 +668,23 @@ class SBMailer {
             $this->logError('doSending', $this->ErrorInfo, array('exception' => $e) );
 
             if ($retry) {
-                return $this->doSending( ($retryCount + 1) );
+                return $this->doSending( $method, ($retryCount + 1) );
             }
         }
         return false;
     }
 
     /**
-     * Sends the email
-     * 
-     * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
+     * Do the final treatment for email before sending
      */
-    public function send () {
+    private function finalizeEmail ($method) {
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
         $this->handleBody();
 
         // Do some basic validations before sending
         if (!$this->basicValidation()) {
-            $this->logError('send', $this->ErrorInfo );
+            $this->logError('finalizeEmail', $this->ErrorInfo, array("method", $method) );
             return false;
         }
 
@@ -668,7 +698,37 @@ class SBMailer {
             $this->from['name']
         );
 
-        return $this->doSending ();
+        return $this->doSending ($method);
+    }
+
+    /**
+     * Sends the email
+     * 
+     * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
+     */
+    public function send () {
+        return $this->finalizeEmail("send");
+    }
+
+    /**
+     * Define when the email must be defered to be sent later in a Batch send
+     */
+    public function deferToQueue() {
+        $success = $this->finalizeEmail("deferToQueue");
+        if ($success) {
+            $this->clearRecipients();
+        }
+        return $success;
+    }
+
+    /**
+     * Send all the defered emails in batch
+     * 
+     * @return array result list
+     */
+    public function sendQueue () {
+        $resultList = $this->mailAdapter->sendQueue();
+        return !empty($resultList) ? $resultList : array("status" => "ERROR", "message" => "No Response from adapter");
     }
 
     /**

@@ -19,6 +19,7 @@ $tag = "";
 $subject = "";
 $isHtml = true;
 $body = "";
+$textBody = "";
 
 // Creates the default mailer instance as configurations
 $mailer = SBMailer::createDefault();
@@ -89,87 +90,104 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    // Defining true enable Exceptions
    // $mailer = SBMailer::createDefault(true);
 
-   // Set the From fields of email
-   $from = getInput("from");
-   $fromName = getInput("fromName");
-   $mailer->setFrom($from, $fromName);
-   
-   $replyToList = getEmailsFromInput ("replyTo");
-   foreach($replyToList as $recipient) {
-      $mailer->addReplyTo($recipient["email"], $recipient["name"]);
-   }
+   for ($i = 0; $i<1; $i++) {
 
-   // Add recipients
-   $toList = getEmailsFromInput ("to");
-   foreach($toList as $recipient) {
-      $mailer->addAddress($recipient["email"], $recipient["name"]);
-   }
+      // Set the From fields of email
+      $from = getInput("from");
+      $fromName = getInput("fromName");
+      $mailer->setFrom($from, $fromName);
+      
+      $replyToList = getEmailsFromInput ("replyTo");
+      foreach($replyToList as $recipient) {
+         $mailer->addReplyTo($recipient["email"], $recipient["name"]);
+      }
 
-   // CC
-   $ccList = getEmailsFromInput ("cc");
-   foreach($ccList as $recipient) {
-      $mailer->addCC($recipient["email"], $recipient["name"]);
-   }
+      // Add recipients
+      $toList = getEmailsFromInput ("to");
+      foreach($toList as $recipient) {
+         $mailer->addAddress($recipient["email"], $recipient["name"]);
+      }
 
-   // BCC
-   $bccList = getEmailsFromInput ("bcc");
-   foreach($bccList as $recipient) {
-      $mailer->addBcc($recipient["email"], $recipient["name"]);
-   }
+      // CC
+      $ccList = getEmailsFromInput ("cc");
+      foreach($ccList as $recipient) {
+         $mailer->addCC($recipient["email"], $recipient["name"]);
+      }
 
-   // Add attachments
-   if (is_array($_FILES['attach']) && is_array($_FILES['attach']['name'])) {
-      $attach = $_FILES['attach'];
-      foreach($attach['name'] as $index => $name) {
-         if (!empty($name)) {
-            $errorCode = isset($attach["error"][$index]) ? $attach["error"][$index] : 0;
-            if ($errorCode !== UPLOAD_ERR_OK) {
-               $result[] = "Attachment (".$name.") not added due to error: " . 
-                  getUploadErrorDescription($errorCode);
-            } else {
-               $tmpName = $attach['tmp_name'][$index];
-               $success = $mailer->addAttachment( $tmpName, $name);
-               if (!$success) {
-                  $result[] = "Some error when adding Attachment (" . 
-                     $name . 
-                     "). Details: " . 
-                     $mailer->getErrorInfo();
+      // BCC
+      $bccList = getEmailsFromInput ("bcc");
+      foreach($bccList as $recipient) {
+         $mailer->addBcc($recipient["email"], $recipient["name"]);
+      }
+
+      // Add attachments
+      if (is_array($_FILES['attach']) && is_array($_FILES['attach']['name'])) {
+         $attach = $_FILES['attach'];
+         foreach($attach['name'] as $index => $name) {
+            if (!empty($name)) {
+               $errorCode = isset($attach["error"][$index]) ? $attach["error"][$index] : 0;
+               if ($errorCode !== UPLOAD_ERR_OK) {
+                  $result[] = "Attachment (".$name.") not added due to error: " . 
+                     getUploadErrorDescription($errorCode);
+               } else {
+                  $tmpName = $attach['tmp_name'][$index];
+                  $success = $mailer->addAttachment( $tmpName, $name);
+                  if (!$success) {
+                     $result[] = "Some error when adding Attachment (" . 
+                        $name . 
+                        "). Details: " . 
+                        $mailer->getErrorInfo();
+                  }
                }
             }
          }
       }
+
+      // Set the tag
+      $tag = getInput("tag");
+      if (!empty($tag)) {
+         $mailer->setTag($tag);
+      }
+
+      // Set the subject and the email body
+      $subject = getInput("subject");
+      $mailer->setSubject("[$i] - " . $subject);
+      //$mailer->Subject = $subject; // PHPMailer compatibility
+
+      // We use HTML by default. Use it if you need text/plain
+      $isHtml = getInput("is_html") == "Y";
+      $mailer->isHTML($isHtml);
+      
+      $body = getInput("body", true);
+      $mailer->setBody($body);
+      //$mailer->Body = $body; // PHPMailer compatibility
+
+      $textBody = getInput("textBody");
+      $mailer->setAltBody($textBody);
+      //$mailer->AltBody = $textBody; // PHPMailer compatibility
+
+      // Sends the email
+      if ($mailer->send ()) {
+         $result[] = "SUCCESS! Email has been sent by " . $mailer->getMailerName();
+      } else {
+         $result[] = $mailer->getErrorInfo();
+      }
+
+      // // WHEN SENDING BATCH
+      // if (!$mailer->deferToQueue()) {
+      //    $result[] = "Error adding to Queue: " . $mailer->getErrorInfo();
+      // }
    }
-
-   // Set the tag
-   $tag = getInput("tag");
-   if (!empty($tag)) {
-      $mailer->setTag($tag);
-   }
-
-   // Set the subject and the email body
-   $subject = getInput("subject");
-   $mailer->setSubject($subject);
-   //$mailer->Subject = $subject; // PHPMailer compatibility
-
-   // We use HTML by default. Use it if you need text/plain
-   $isHtml = getInput("is_html") == "Y";
-   $mailer->isHTML($isHtml);
    
-   $body = getInput("body", true);
-   $mailer->setBody($body);
-   //$mailer->Body = $body; // PHPMailer compatibility
+   // // WHEN SENDING BATCH
+   // $resultList = $mailer->sendQueue();
 
-   $textBody = getInput("textBody");
-   $mailer->setAltBody($textBody);
-   //$mailer->AltBody = $textBody; // PHPMailer compatibility
+   // foreach($resultList as $index => $messageResult) {
+   //    $result[] = "[$index] - " . $messageResult["status"] . " - " . $messageResult["message"];
+   // }
 
-   // Sends the email
-   if ($mailer->send ()) {
-      $result[] = "SUCCESS! Email has been sent by " . $mailer->getMailerName();
-   } else {
-      $result[] = $mailer->getErrorInfo();
-   }
-   
+
+
    // // When exceptions are enabled
    // try {
    //     $mailer->send ();

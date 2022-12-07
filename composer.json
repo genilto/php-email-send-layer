@@ -31,6 +31,11 @@
             "!logs/.htaccess"
         ]
     },
+    "autoload": {
+        "psr-4": {
+            "genilto\\sbmailer\\": "src/"
+        }
+    },
     "require": {
         "analog/analog": "^1.0"
     }

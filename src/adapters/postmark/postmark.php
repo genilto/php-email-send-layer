@@ -10,6 +10,8 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
     private $apiKey;
     private $email;
 
+    private $deferedList = [];
+
     /**
      * Create a Postmark Adapter
      *
@@ -125,6 +127,38 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         // echo "</pre>";
 
         return true;
+    }
+    public function deferToQueue() {
+        $this->deferedList[] = $this->email;
+        $this->email = $this->resetEmail ();
+    }
+    public function sendQueue () {
+        $client = new PostmarkClient($this->apiKey);
+
+        if (count($this->deferedList) == 0) {
+            throw new Exception("There is no email messages on sending queue!");
+        }
+        $response = array();
+
+        // Send the emails in chunks of 500
+        $emailArrayChuncks = array_chunk($this->deferedList, 500);
+        foreach ($emailArrayChuncks as $chunckedList) {
+            $sendResult = $client->sendEmailBatch($chunckedList);
+            
+            if (!empty($sendResult)) {
+                while ($sendResult->valid()) {
+                    $current = $sendResult->current();
+                    $errorCode = $current->offsetGet("errorcode");
+                    $response[] = array(
+                        "status" => ($errorCode == 0) ? "SUCCESS" : "ERROR",
+                        "errorcode" => $errorCode,
+                        "message" => $current->offsetGet("message")
+                    );
+                    $sendResult->next();
+                }
+            }
+        }
+        return $response;
     }
     public function couldRetryOnError ($exception) {
         $message = $exception->getMessage();

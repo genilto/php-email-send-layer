@@ -112,6 +112,20 @@ interface iSBMailerAdapter
     public function send ();
 
     /**
+     * Define when the email must be defered to be sent in a Batch send
+     */
+    public function deferToQueue ();
+
+    /**
+     * Send all the defered emails in batch
+     * 
+     * @throws \Exception
+     * 
+     * @return array
+     */
+    public function sendQueue ();
+
+    /**
      * Check if a retry could be done for the error exception
      * 
      * @param Exception exception to be analysed

@@ -70,6 +70,12 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
             throw new \Exception($e->getMessage());
         }
     }
+    public function deferToQueue() {
+        throw new Exception("Batch not implemented");
+    }
+    public function sendQueue () {
+        throw new Exception("Batch not implemented");
+    }
     public function couldRetryOnError ($exception) {
         return false;
     }

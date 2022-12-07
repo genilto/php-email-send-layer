@@ -136,6 +136,12 @@ class SBMailersendAdapter implements iSBMailerAdapter {
         }
         return false;
     }
+    public function deferToQueue() {
+        throw new Exception("Batch not implemented");
+    }
+    public function sendQueue () {
+        throw new Exception("Batch not implemented");
+    }
     public function couldRetryOnError ($exception) {
         return false;
     }

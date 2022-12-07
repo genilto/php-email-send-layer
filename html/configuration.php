@@ -29,6 +29,7 @@ define('SBMAILER', array (
             'save_to_sent_items' => true,
         ),
     ),
+    'log_level' => getenv('LOG_LEVEL'), // 0 - Off | 1 - Error only | 2 - Full
     'env' => getenv('ENV'), // 'prod' or 'test'
     'test_address' => getenv('TEST_ADDRESS'), // Required when env == 'test'
     'test_address_name' => getenv('TEST_ADDRESS_NAME'),
