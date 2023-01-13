@@ -81,8 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          8 => 'A PHP extension stopped the file upload.',
       );
 
-      if (isset($uploadErrorCode[$phpFileUploadErrors])) {
-         return $uploadErrorCode[$phpFileUploadErrors];
+      if (isset($phpFileUploadErrors[$uploadErrorCode])) {
+         return $phpFileUploadErrors[$uploadErrorCode];
       }
       return false;
    }
