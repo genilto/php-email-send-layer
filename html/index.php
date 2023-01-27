@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       // Set the From fields of email
       $from = getInput("from");
-      $fromName = getInput("fromName");
+      $fromName = getInput("fromName", true);
       $mailer->setFrom($from, $fromName);
       
       $replyToList = getEmailsFromInput ("replyTo");
