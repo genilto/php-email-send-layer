@@ -47,7 +47,7 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         if (empty($name)) {
             return $address;
         }
-        $fixedName = htmlentities($name);
+        $fixedName = quoted_printable_encode($name);
         return "\"$fixedName\" <$address>";
     }
     private function addAnAddress ($kind, $address, $name) {
