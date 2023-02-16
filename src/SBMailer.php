@@ -678,6 +678,7 @@ class SBMailer {
      * Do the final treatment for email before sending
      */
     private function finalizeEmail ($method) {
+        $this->bodyToAppend = "";
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
         $this->handleBody();
