@@ -112,9 +112,16 @@ interface iSBMailerAdapter
     public function send ();
 
     /**
-     * Define when the email must be defered to be sent in a Batch send
+     * Defer the message to a queue to be sent later in Batch
      */
     public function deferToQueue ();
+
+    /**
+     * Verify when the quantity of messages in the queue is greater than the max messages to send in batch
+     * 
+     * @return bool true when the quantity of messages in the queue is greater than the max messages to send in batch
+     */
+    public function shouldSendQueue ();
 
     /**
      * Send all the defered emails in batch

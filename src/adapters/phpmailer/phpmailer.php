@@ -73,6 +73,9 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
+    public function shouldSendQueue() {
+        return false;
+    }
     public function sendQueue () {
         throw new Exception("Batch not implemented");
     }

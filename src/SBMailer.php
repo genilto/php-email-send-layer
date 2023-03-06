@@ -678,6 +678,7 @@ class SBMailer {
      * Do the final treatment for email before sending
      */
     private function finalizeEmail ($method) {
+        $this->bodyToAppend = "";
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
         $this->handleBody();
@@ -719,6 +720,22 @@ class SBMailer {
             $this->clearRecipients();
         }
         return $success;
+    }
+
+    /**
+     * Defer the message to a queue to be sent in Batch
+     * It is different from deferToQueue because when it reaches the max items in
+     * the queue, it immediately sends the messages, clearing the queue
+     * Useful in servers with limited amount of memmory
+     * 
+     * @return array Array with sending results. When just added to queue, return an empty array
+     */
+    public function deferToQueueOrSendQueue () {
+        $success = $this->deferToQueue();
+        if ($success && $this->mailAdapter->shouldSendQueue()) {
+            return $this->sendQueue();
+        }
+        return array();
     }
 
     /**
