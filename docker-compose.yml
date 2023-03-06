@@ -5,6 +5,8 @@ services:
     image: php:${PHP_VERSION}-apache
     container_name: mailer
     restart: unless-stopped
+    mem_limit: "512m"
+    mem_reservation: "256m"
     ports:
       - 85:80
     environment:

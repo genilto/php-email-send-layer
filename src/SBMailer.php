@@ -723,6 +723,22 @@ class SBMailer {
     }
 
     /**
+     * Defer the message to a queue to be sent in Batch
+     * It is different from deferToQueue because when it reaches the max items in
+     * the queue, it immediately sends the messages, clearing the queue
+     * Useful in servers with limited amount of memmory
+     * 
+     * @return array Array with sending results. When just added to queue, return an empty array
+     */
+    public function deferToQueueOrSendQueue () {
+        $success = $this->deferToQueue();
+        if ($success && $this->mailAdapter->shouldSendQueue()) {
+            return $this->sendQueue();
+        }
+        return array();
+    }
+
+    /**
      * Send all the defered emails in batch
      * 
      * @return array result list
