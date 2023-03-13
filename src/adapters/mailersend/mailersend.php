@@ -103,7 +103,7 @@ class SBMailersendAdapter implements iSBMailerAdapter {
             // echo "<pre>";
             // print_r($sendResult);
             // echo "</pre>";
-            return true;
+            return array("status" => "SUCCESS");
         } catch (MailerSendValidationException $e) {
             $response = $e->getResponse();
 
@@ -134,12 +134,12 @@ class SBMailersendAdapter implements iSBMailerAdapter {
             }
             throw new Exception($errorMessage);
         }
-        return false;
+        return array("status" => "ERROR");
     }
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

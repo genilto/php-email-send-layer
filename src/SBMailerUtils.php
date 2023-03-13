@@ -276,4 +276,18 @@ class SBMailerUtils {
         }
         return $contents;
     }
+
+    /**
+     * Get aproximate memory usage of some email message
+     * 
+     * @param array $email
+     * 
+     * @return int The aproximated bytes of message
+     */
+    public static function getMemoryUsage ($email) {
+        $mem = memory_get_usage();
+        $tmp = unserialize(serialize($email));
+        // Return the unserialized memory usage
+        return (memory_get_usage() - $mem);
+    }
 }

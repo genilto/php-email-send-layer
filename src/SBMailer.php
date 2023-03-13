@@ -645,8 +645,7 @@ class SBMailer {
     private function doSending ($method, $retryCount = 0) {
         try {
             // Send the message
-            $this->mailAdapter->$method();
-            return true;
+            return $this->mailAdapter->$method();
         } catch (\Exception $e) {
             $this->ErrorInfo = $e->getMessage();
 
@@ -671,13 +670,15 @@ class SBMailer {
                 return $this->doSending( $method, ($retryCount + 1) );
             }
         }
-        return false;
+        return array("status" => "ERROR", "message" => $this->ErrorInfo);
     }
 
     /**
      * Do the final treatment for email before sending
+     * 
+     * @return bool true on success
      */
-    private function finalizeEmail ($method) {
+    private function finalizeEmail () {
         $this->bodyToAppend = "";
         $this->handleRecipients();
         $this->mailAdapter->setSubject( $this->Subject );
@@ -685,7 +686,7 @@ class SBMailer {
 
         // Do some basic validations before sending
         if (!$this->basicValidation()) {
-            $this->logError('finalizeEmail', $this->ErrorInfo, array("method", $method) );
+            $this->logError('finalizeEmail', $this->ErrorInfo );
             return false;
         }
 
@@ -699,7 +700,7 @@ class SBMailer {
             $this->from['name']
         );
 
-        return $this->doSending ($method);
+        return true;
     }
 
     /**
@@ -708,18 +709,23 @@ class SBMailer {
      * @return bool false on error - See the ErrorInfo property or getErrorInfo() method for details of the error
      */
     public function send () {
-        return $this->finalizeEmail("send");
+        if (!$this->finalizeEmail()) {
+            return false;
+        }
+        $result = $this->doSending ("send");
+        return $result["status"] == "SUCCESS";
     }
 
     /**
      * Define when the email must be defered to be sent later in a Batch send
      */
     public function deferToQueue() {
-        $success = $this->finalizeEmail("deferToQueue");
-        if ($success) {
-            $this->clearRecipients();
+        if (!$this->finalizeEmail()) {
+            return false;
         }
-        return $success;
+        $this->mailAdapter->deferToQueue();
+        $this->clearRecipients();
+        return true;
     }
 
     /**
@@ -731,11 +737,16 @@ class SBMailer {
      * @return array Array with sending results. When just added to queue, return an empty array
      */
     public function deferToQueueOrSendQueue () {
-        $success = $this->deferToQueue();
-        if ($success && $this->mailAdapter->shouldSendQueue()) {
-            return $this->sendQueue();
+        if (!$this->finalizeEmail()) {
+            return array("status" => "ERROR", "message" => $this->ErrorInfo);
         }
-        return array();
+        $sendResult = array();
+        if ($this->mailAdapter->shouldSendQueueBeforeAdd()) {
+            $sendResult = $this->sendQueue();
+        }
+        $this->mailAdapter->deferToQueue();
+        $this->clearRecipients();
+        return $sendResult;
     }
 
     /**
@@ -744,7 +755,7 @@ class SBMailer {
      * @return array result list
      */
     public function sendQueue () {
-        $resultList = $this->mailAdapter->sendQueue();
+        $resultList = $this->doSending ("sendQueue");
         return !empty($resultList) ? $resultList : array("status" => "ERROR", "message" => "No Response from adapter");
     }
 

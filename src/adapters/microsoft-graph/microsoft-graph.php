@@ -132,7 +132,7 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
             // echo "<pre>";
             // print_r($sendResult);
             // echo "</pre>";
-            return true;
+            return array("status" => "SUCCESS");
         
         } catch (Exception $e) {
             // echo "<pre>";
@@ -140,7 +140,7 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
             // echo "</pre>";
             throw $e;
         }
-        return false;
+        return array("status" => "ERROR");
     }
 
     private function getAuthToken () {
@@ -159,7 +159,7 @@ class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

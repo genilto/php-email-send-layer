@@ -101,12 +101,12 @@ class SBSendgridAdapter implements iSBMailerAdapter {
             }
             throw new Exception($errorMessage);
         }
-        return true;
+        return array("status" => "SUCCESS");
     }
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

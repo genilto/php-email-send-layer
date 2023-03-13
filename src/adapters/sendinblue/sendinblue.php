@@ -136,7 +136,7 @@ class SBSendinblueAdapter implements iSBMailerAdapter {
             // echo "RESULT: <pre>";
             // print_r($result);
             // echo "</pre>";
-            return true;
+            return array("status" => "SUCCESS");
         } catch (ApiException $e) {
             $responseBody = $e->getResponseBody();
             if (empty($responseBody)) {
@@ -149,12 +149,12 @@ class SBSendinblueAdapter implements iSBMailerAdapter {
             $errorMessage = "Status Code returned by Sendinblue: " . $data->code . ". Details: " . $data->message;
             throw new \Exception($errorMessage);
         }
-        return false;
+        return array("status" => "ERROR");
     }
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

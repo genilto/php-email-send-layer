@@ -65,7 +65,10 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function setTag($tagName) {}
     public function send () {
         try {
-            return $this->mailer->send();
+            if ($this->mailer->send()) {
+                return array("status" => "SUCCESS");
+            }
+           return array("status" => "ERROR");
         } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -73,7 +76,7 @@ class SBPHPMailerAdapter implements iSBMailerAdapter {
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

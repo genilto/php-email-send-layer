@@ -7,10 +7,13 @@ use Postmark\Models\PostmarkAttachment;
 
 class SBPostmarkAdapter implements iSBMailerAdapter {
 
-    public const MAX_MESSAGES_IN_QUEUE = 300;
+    public const MAX_MESSAGES_IN_QUEUE = 500;
+    public const MAX_QUEUE_SIZE = 50000000; // Around 47MB. Postmark limits to 50MB
 
     private $apiKey;
     private $email;
+
+    private $queueSize = 0;
     private $deferedList = [];
 
     /**
@@ -41,7 +44,8 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
             'Headers' => NULL, // array
             'TrackOpens' => NULL,
             "TrackLinks" => NULL,
-            'MessageStream' => NULL
+            'MessageStream' => NULL,
+            'size' => 0
         );
     }
     private function createAddress ($address, $name) {
@@ -127,48 +131,105 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         // print_r($sendResult);
         // echo "</pre>";
 
-        return true;
+        return array("status" => "SUCCESS");
     }
     public function deferToQueue() {
+        if ($this->email['size'] == 0)
+            $this->email['size'] = SBMailerUtils::getMemoryUsage($this->email);
+        $this->queueSize += $this->email['size'];
         $this->deferedList[] = $this->email;
-        $this->email = $this->resetEmail ();
+        $this->resetEmail ();
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
+        $this->email['size'] = SBMailerUtils::getMemoryUsage($this->email);
         // When reach the max messages in queue
-        return (count($this->deferedList) >= self::MAX_MESSAGES_IN_QUEUE);
+        // Or the maximum amount of memory usage
+        return (count($this->deferedList) >= self::MAX_MESSAGES_IN_QUEUE) || 
+            (($this->queueSize + $this->email['size']) >= self::MAX_QUEUE_SIZE);
+    }
+    private function sendMailBatch ($client, &$chunckedList, &$response) {
+        $sendResult = $client->sendEmailBatch($chunckedList);
+        if (!empty($sendResult)) {
+            while ($sendResult->valid()) {
+                $current = $sendResult->current();
+                $errorCode = $current->offsetGet("errorcode");
+                $response[] = array(
+                    "status" => ($errorCode == 0) ? "SUCCESS" : "ERROR",
+                    "errorcode" => $errorCode,
+                    "message" => $current->offsetGet("message")
+                );
+                $sendResult->next();
+            }
+        }
+        // foreach($chunckedList as $index => $email) {
+        //     $response[] = array(
+        //                     "status" => "SUCCESS",
+        //                     "errorcode" => 0,
+        //                     "message" => $index,
+        //                     "size" => $email["size"]
+        //                 );
+        // }
     }
     public function sendQueue () {
         if (count($this->deferedList) == 0) {
-            throw new Exception("There is no email messages on sending queue!");
+            //throw new Exception("There is no email messages on sending queue!");
+            return [];
         }
         $client = new PostmarkClient($this->apiKey);
         $response = array();
 
-        // Send the emails in chunks of 500
-        while ($chunckedList = array_splice($this->deferedList, 0, self::MAX_MESSAGES_IN_QUEUE)) {
-            $sendResult = $client->sendEmailBatch($chunckedList);
-            if (!empty($sendResult)) {
-                while ($sendResult->valid()) {
-                    $current = $sendResult->current();
-                    $errorCode = $current->offsetGet("errorcode");
-                    $response[] = array(
-                        "status" => ($errorCode == 0) ? "SUCCESS" : "ERROR",
-                        "errorcode" => $errorCode,
-                        "message" => $current->offsetGet("message")
-                    );
-                    $sendResult->next();
-                }
+        $totalMessages = 0;
+        $totalSize = 0;
+        $chunckedList = [];
+
+        foreach($this->deferedList as $email) {
+            if (($totalMessages >= self::MAX_MESSAGES_IN_QUEUE) || (($totalSize + $email['size']) >= self::MAX_QUEUE_SIZE)) {
+                //echo " Sending (Chuncked): " . count($chunckedList) . " emails " . ($totalSize / 1024 / 1024) . "MB <br>";
+                $this->sendMailBatch ($client, $chunckedList, $response);
+                $totalMessages = 0;
+                $totalSize = 0;
+                $chunckedList = [];
             }
-            // echo "Sending " . count($chunckedList) . " emails... ";
-            // foreach($chunckedList as $index => $message) {
-            //     $response[] = array(
-            //                     "status" => "SUCCESS",
-            //                     "errorcode" => 0,
-            //                     "message" => $index
-            //                 );
-            // }
-            // echo " Remaining in array: " . count($this->deferedList) . " <br>";
+            $totalMessages++;
+            $totalSize += $email['size'];
+            $chunckedList[] = $email;
         }
+
+        if (count($chunckedList) > 0) {
+            //echo " Sending: " . count($chunckedList) . " emails " . ($totalSize / 1024 / 1024) . "KB <br>";
+            $this->sendMailBatch ($client, $chunckedList, $response);
+        }
+
+        // // Send the emails in chunks of 500
+        // while ($chunckedList = array_splice($this->deferedList, 0, self::MAX_MESSAGES_IN_QUEUE)) {
+        //     $sendResult = $client->sendEmailBatch($chunckedList);
+        //     if (!empty($sendResult)) {
+        //         while ($sendResult->valid()) {
+        //             $current = $sendResult->current();
+        //             $errorCode = $current->offsetGet("errorcode");
+        //             $response[] = array(
+        //                 "status" => ($errorCode == 0) ? "SUCCESS" : "ERROR",
+        //                 "errorcode" => $errorCode,
+        //                 "message" => $current->offsetGet("message")
+        //             );
+        //             $sendResult->next();
+        //         }
+        //     }
+        //     // echo "Sending " . count($chunckedList) . " emails... ";
+        //     // $totalSize = 0;
+        //     // foreach($chunckedList as $index => $email) {
+        //     //     $response[] = array(
+        //     //                     "status" => "SUCCESS",
+        //     //                     "errorcode" => 0,
+        //     //                     "message" => $index,
+        //     //                     "size" => $email["size"]
+        //     //                 );
+        //     //     $totalSize += $email["size"];
+        //     // }
+        //     // echo " Total sent: " . $totalSize . " Remaining in array: " . count($this->deferedList) . " <br>";
+        // }
+        $this->deferedList = [];
+        $this->queueSize = 0;
         return $response;
     }
     public function couldRetryOnError ($exception) {
