@@ -8,7 +8,7 @@ use Postmark\Models\PostmarkAttachment;
 class SBPostmarkAdapter implements iSBMailerAdapter {
 
     public const MAX_MESSAGES_IN_QUEUE = 500;
-    public const MAX_QUEUE_SIZE = 50000000; // Around 47MB. Postmark limits to 50MB
+    public const MAX_QUEUE_SIZE = 35000000; // Postmark limits to 50MB. Defining less than the limit
 
     private $apiKey;
     private $email;
@@ -147,7 +147,9 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         return (count($this->deferedList) >= self::MAX_MESSAGES_IN_QUEUE) || 
             (($this->queueSize + $this->email['size']) >= self::MAX_QUEUE_SIZE);
     }
-    private function sendMailBatch ($client, &$chunckedList, &$response) {
+    private function sendMailBatch ($client, &$chunckedList, &$response, $totalSize) {
+        $startTime = time();
+        
         $sendResult = $client->sendEmailBatch($chunckedList);
         if (!empty($sendResult)) {
             while ($sendResult->valid()) {
@@ -161,6 +163,7 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
                 $sendResult->next();
             }
         }
+        
         // foreach($chunckedList as $index => $email) {
         //     $response[] = array(
         //                     "status" => "SUCCESS",
@@ -169,6 +172,16 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         //                     "size" => $email["size"]
         //                 );
         // }
+        $endTime = time();
+        
+        // Add a last object with some stats
+        $response[] = array(
+                            "status" => "STATS",
+                            "size" => $totalSize,
+                            "startTime" => $startTime,
+                            "endTime" => $endTime,
+                            "time" => ($endTime - $startTime)
+                        );
     }
     public function sendQueue () {
         if (count($this->deferedList) == 0) {
@@ -185,7 +198,7 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
         foreach($this->deferedList as $email) {
             if (($totalMessages >= self::MAX_MESSAGES_IN_QUEUE) || (($totalSize + $email['size']) >= self::MAX_QUEUE_SIZE)) {
                 //echo " Sending (Chuncked): " . count($chunckedList) . " emails " . ($totalSize / 1024 / 1024) . "MB <br>";
-                $this->sendMailBatch ($client, $chunckedList, $response);
+                $this->sendMailBatch ($client, $chunckedList, $response, $totalSize);
                 $totalMessages = 0;
                 $totalSize = 0;
                 $chunckedList = [];
@@ -197,7 +210,7 @@ class SBPostmarkAdapter implements iSBMailerAdapter {
 
         if (count($chunckedList) > 0) {
             //echo " Sending: " . count($chunckedList) . " emails " . ($totalSize / 1024 / 1024) . "KB <br>";
-            $this->sendMailBatch ($client, $chunckedList, $response);
+            $this->sendMailBatch ($client, $chunckedList, $response, $totalSize);
         }
 
         // // Send the emails in chunks of 500
