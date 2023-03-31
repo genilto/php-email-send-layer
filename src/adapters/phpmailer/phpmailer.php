@@ -1,8 +1,10 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
+use \PHPMailer\PHPMailer\PHPMailer;
+//use \PHPMailer\PHPMailer\SMTP;
+use \PHPMailer\PHPMailer\Exception;
 
 class SBPHPMailerAdapter implements iSBMailerAdapter {
 

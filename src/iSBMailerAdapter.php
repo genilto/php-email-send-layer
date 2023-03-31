@@ -1,5 +1,7 @@
 <?php
 
+namespace genilto\sbmailer;
+
 interface iSBMailerAdapter
 {
     /**

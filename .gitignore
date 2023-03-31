@@ -1,6 +1,6 @@
 /dist
+/logs
+/vendor
 /html/batch-test.php
-vendor
 .env
 .env-*
-/logs/*.log

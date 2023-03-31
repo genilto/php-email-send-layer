@@ -1,7 +1,9 @@
 <?php
 
-use Postmark\PostmarkClient;
-use Postmark\Models\PostmarkAttachment;
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
+use \Postmark\PostmarkClient;
+use \Postmark\Models\PostmarkAttachment;
 
 class SBPostmarkAdapter implements iSBMailerAdapter {
 
