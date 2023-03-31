@@ -2,6 +2,7 @@
 
 define('SBMAILER', array (
     'default' => getenv('DEFAULT_ADAPTER'),
+    //'log_location' => '',
     'params'  => array (
         'postmark' => array (
             'api_key' => getenv('POSTMARK_API_KEY')

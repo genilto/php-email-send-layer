@@ -1,6 +1,5 @@
 <?php
 
-use Analog\Analog;
 use Psr\Log\LoggerInterface;
 use Analog\Logger;
 
@@ -207,7 +206,12 @@ class SBMailer {
         // Create Default Logger
         $currentDate = date("Y-m-d");
         $logger = new Logger();
-        $logger->handler (__DIR__ . "/../logs/$currentDate-$adapterName.log");
+        $logLocation = empty($config['log_location']) ? (__DIR__ . "/../logs") : $config['log_location'];
+        if (!file_exists($logLocation)) {
+            mkdir($logLocation, 0755);
+            @file_put_contents("$logLocation/.htaccess", "Deny from all");
+        }
+        $logger->handler ("$logLocation/$currentDate-$adapterName.log");
 
         $logLevel = isset($config['log_level']) ? $config['log_level'] : null;
 

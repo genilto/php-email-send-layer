@@ -1,7 +1,5 @@
 <?php
 
-require_once ( __DIR__ . "/vendor/autoload.php");
-
 use \SendinBlue\Client\ApiException;
 use \SendinBlue\Client\Model\SendSmtpEmail;
 use \SendinBlue\Client\Model\SendSmtpEmailAttachment;

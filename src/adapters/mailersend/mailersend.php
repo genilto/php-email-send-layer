@@ -1,7 +1,5 @@
 <?php
 
-require_once ( __DIR__ . "/vendor/autoload.php");
-
 use MailerSend\MailerSend;
 use MailerSend\Helpers\Builder\Recipient;
 use MailerSend\Helpers\Builder\Attachment;

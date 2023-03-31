@@ -1,4 +1,5 @@
 /dist
+/html/batch-test.php
 vendor
 .env
 .env-*

@@ -1,7 +1,5 @@
 <?php
 
-require_once ( __DIR__ . "/vendor/autoload.php");
-
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model\Attachment;
 use Microsoft\Graph\Model\BodyType;

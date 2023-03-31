@@ -2,7 +2,7 @@
     "name": "genilto/sbmailer",
     "description": "A small layer created to abstract the ways to send emails with php.",
     "homepage": "https://github.com/genilto/sbmailer",
-    "license": "GNU",
+    "license": "MIT",
     "keywords": [
         "adapter",
         "email",
@@ -38,5 +38,20 @@
     },
     "require": {
         "analog/analog": "^1.0"
+    },
+    "require-dev": {
+        "wildbit/postmark-php": "^4.0",
+        "phpmailer/phpmailer": "^6.8",
+        "sendgrid/sendgrid": "^8.0",
+        "php-http/guzzle7-adapter": "^1.0",
+        "nyholm/psr7": "^1.5",
+        "mailersend/mailersend": "^0.9.1",
+        "sendinblue/api-v3-sdk": "^8.4",
+        "microsoft/microsoft-graph": "^1.92"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
