@@ -1,5 +1,7 @@
 <?php
 
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
 class SBSendgridAdapter implements iSBMailerAdapter {
 
     private $apiKey;

@@ -1,10 +1,12 @@
 <?php
 
-use MailerSend\MailerSend;
-use MailerSend\Helpers\Builder\Recipient;
-use MailerSend\Helpers\Builder\Attachment;
-use MailerSend\Helpers\Builder\EmailParams;
-use MailerSend\Exceptions\MailerSendValidationException;
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
+use \MailerSend\MailerSend;
+use \MailerSend\Helpers\Builder\Recipient;
+use \MailerSend\Helpers\Builder\Attachment;
+use \MailerSend\Helpers\Builder\EmailParams;
+use \MailerSend\Exceptions\MailerSendValidationException;
 
 class SBMailersendAdapter implements iSBMailerAdapter {
 

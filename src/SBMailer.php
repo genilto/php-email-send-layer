@@ -1,5 +1,7 @@
 <?php
 
+namespace genilto\sbmailer;
+
 use Psr\Log\LoggerInterface;
 use Analog\Logger;
 
@@ -200,7 +202,7 @@ class SBMailer {
         }
         
         // Instatiate the adapter
-        $mailAdapterClass = new ReflectionClass($adapterConfiguration['className']);
+        $mailAdapterClass = new \ReflectionClass($adapterConfiguration['className']);
         $mailAdapter = $mailAdapterClass->newInstanceArgs( array ( $adapterParams ) );
 
         // Create Default Logger
@@ -347,7 +349,7 @@ class SBMailer {
      * @param string $path Path of the file in server filesystem
      * @param string $name (optional) Name to display the attachment in email
      * 
-     * @throws Exception
+     * @throws \Exception
      *
      * @return bool true when success, false when some error occurred and ErrorInfo will have details of the error
      */
@@ -357,7 +359,7 @@ class SBMailer {
                     $path,
                     $name
                 );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->ErrorInfo = $e->getMessage();
             $this->logError ('addAttachment', $this->ErrorInfo, array('exception' => $e));
             return false;

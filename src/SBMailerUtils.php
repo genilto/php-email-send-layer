@@ -1,5 +1,7 @@
 <?php
 
+namespace genilto\sbmailer;
+
 class SBMailerUtils {
 
     public const CONTENT_TYPE_PLAINTEXT = 'text/plain';
@@ -267,12 +269,12 @@ class SBMailerUtils {
      * 
      * @return string The function returns the read data
      * 
-     * @throws Exception when not possible to read the file
+     * @throws \Exception when not possible to read the file
      */
     public static function getFileContents ($path) {
         $contents = @file_get_contents($path);
         if ($contents === false) {
-            throw new Exception("File Not found");
+            throw new \Exception("File Not found");
         }
         return $contents;
     }

@@ -1,13 +1,15 @@
 <?php
 
-use Microsoft\Graph\Graph;
-use Microsoft\Graph\Model\Attachment;
-use Microsoft\Graph\Model\BodyType;
-use Microsoft\Graph\Model\EmailAddress;
-use Microsoft\Graph\Model\InternetMessageHeader;
-use Microsoft\Graph\Model\ItemBody;
-use Microsoft\Graph\Model\Message;
-use Microsoft\Graph\Model\Recipient;
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
+use \Microsoft\Graph\Graph;
+use \Microsoft\Graph\Model\Attachment;
+use \Microsoft\Graph\Model\BodyType;
+use \Microsoft\Graph\Model\EmailAddress;
+use \Microsoft\Graph\Model\InternetMessageHeader;
+use \Microsoft\Graph\Model\ItemBody;
+use \Microsoft\Graph\Model\Message;
+use \Microsoft\Graph\Model\Recipient;
 
 class SBMicrosoftGraphAdapter implements iSBMailerAdapter {
 

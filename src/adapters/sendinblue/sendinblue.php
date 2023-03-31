@@ -1,5 +1,7 @@
 <?php
 
+use \genilto\sbmailer\iSBMailerAdapter;
+use \genilto\sbmailer\SBMailerUtils;
 use \SendinBlue\Client\ApiException;
 use \SendinBlue\Client\Model\SendSmtpEmail;
 use \SendinBlue\Client\Model\SendSmtpEmailAttachment;

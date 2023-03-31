@@ -1,10 +1,13 @@
 <?php
-
 // Import the configurations
 require_once ( __DIR__ . '/configuration.php' );
 
-// Load SBMailer Class
-require_once ( __DIR__ . '/../SBMailer.php' );
+// To use as a standalone library, without composer
+//require_once ( __DIR__ . "/../SBMailer.php");
+
+// Require the autoload and import the SBMailer class to use
+require_once ( __DIR__ . "/../vendor/autoload.php");
+use genilto\sbmailer\SBMailer;
 
 $result = array();
 
