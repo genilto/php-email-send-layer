@@ -107,7 +107,7 @@ interface iSBMailerAdapter
      * 
      * @throws \Exception
      * 
-     * @return bool false on error
+     * @return array
      */
     public function send ();
 
@@ -121,7 +121,7 @@ interface iSBMailerAdapter
      * 
      * @return bool true when the quantity of messages in the queue is greater than the max messages to send in batch
      */
-    public function shouldSendQueue ();
+    public function shouldSendQueueBeforeAdd ();
 
     /**
      * Send all the defered emails in batch

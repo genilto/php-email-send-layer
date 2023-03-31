@@ -1,7 +1,5 @@
 <?php
 
-require_once ( __DIR__ . "/vendor/autoload.php");
-
 use MailerSend\MailerSend;
 use MailerSend\Helpers\Builder\Recipient;
 use MailerSend\Helpers\Builder\Attachment;
@@ -103,7 +101,7 @@ class SBMailersendAdapter implements iSBMailerAdapter {
             // echo "<pre>";
             // print_r($sendResult);
             // echo "</pre>";
-            return true;
+            return array("status" => "SUCCESS");
         } catch (MailerSendValidationException $e) {
             $response = $e->getResponse();
 
@@ -134,12 +132,12 @@ class SBMailersendAdapter implements iSBMailerAdapter {
             }
             throw new Exception($errorMessage);
         }
-        return false;
+        return array("status" => "ERROR");
     }
     public function deferToQueue() {
         throw new Exception("Batch not implemented");
     }
-    public function shouldSendQueue() {
+    public function shouldSendQueueBeforeAdd() {
         return false;
     }
     public function sendQueue () {

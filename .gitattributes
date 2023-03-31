@@ -1,0 +1,8 @@
+README.md export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+custom_php.ini export-ignore
+custom_php.ini export-ignore
+env.sample export-ignore
+docker-compose.yml export-ignore
+/html export-ignore
